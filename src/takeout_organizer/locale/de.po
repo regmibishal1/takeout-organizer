@@ -1,0 +1,660 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: takeout-organizer\n"
+"Language: de\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Language-Name: Deutsch\n"
+"X-Thousands-Separator: .\n"
+"X-Decimal-Separator: ,\n"
+
+#: gui.py
+msgid "Choose folders"
+msgstr "Ordner wählen"
+
+#: gui.py
+msgid "Preview"
+msgstr "Vorschau"
+
+#: gui.py
+msgid "Organize"
+msgstr "Ordnen"
+
+#: gui.py
+msgid "Done"
+msgstr "Fertig"
+
+#: gui.py
+msgid "Year / Month"
+msgstr "Jahr / Monat"
+
+#: gui.py
+msgid "Year / Month / Day"
+msgstr "Jahr / Monat / Tag"
+
+#: gui.py
+msgid "Year"
+msgstr "Jahr"
+
+#: gui.py
+msgid "One folder"
+msgstr "Ein Ordner"
+
+#: gui.py
+msgid "Smart (recommended)"
+msgstr "Intelligent (empfohlen)"
+
+#: gui.py
+msgid "Exact copies only"
+msgstr "Nur exakte Kopien"
+
+#: gui.py
+msgid "Off"
+msgstr "Aus"
+
+#: gui.py
+msgid ""
+"1. Go to takeout.google.com, choose Deselect all, then select only Google Photos.\n"
+"2. Choose Send download link via email, Export once, file type .zip, size 50 GB.\n"
+"3. Download every part within 7 days into one folder. Do not unzip them.\n"
+"4. If you use shared albums, download those albums too, into the same folder.\n"
+"5. Choose that folder below."
+msgstr ""
+"1. Öffnen Sie takeout.google.com, wählen Sie Auswahl aufheben und dann nur Google Fotos.\n"
+"2. Wählen Sie Downloadlink per E-Mail senden, Einmal exportieren, Dateityp .zip, Größe 50 GB.\n"
+"3. Laden Sie alle Teile innerhalb von 7 Tagen in einen Ordner. Entpacken Sie sie nicht.\n"
+"4. Wenn Sie geteilte Alben nutzen, laden Sie diese Alben auch in denselben Ordner.\n"
+"5. Wählen Sie diesen Ordner unten aus."
+
+#: gui.py
+#, python-brace-format
+msgid "for example 20230615_143045_IMG_1234.jpg; {date} and {name} are filled in, and files with only a guessed date keep their names"
+msgstr "zum Beispiel 20230615_143045_IMG_1234.jpg; {date} und {name} werden ausgefüllt, und Dateien mit nur geschätztem Datum behalten ihren Namen"
+
+#: gui.py
+msgid "Reading Takeout"
+msgstr "Takeout lesen"
+
+#: gui.py
+msgid "Finding duplicates"
+msgstr "Duplikate suchen"
+
+#: gui.py
+msgid "Planning"
+msgstr "Planen"
+
+#: gui.py
+msgid "Writing metadata and copying"
+msgstr "Metadaten schreiben und kopieren"
+
+#: gui.py
+msgid "Copying"
+msgstr "Kopieren"
+
+#: gui.py
+msgid "Writing metadata"
+msgstr "Metadaten schreiben"
+
+#: gui.py
+msgid "Photos and videos"
+msgstr "Fotos und Videos"
+
+#: gui.py
+msgid "Dated from Google"
+msgstr "Datum von Google"
+
+#: gui.py
+msgid "Duplicates to skip"
+msgstr "Zu überspringende Duplikate"
+
+#: gui.py
+msgid "Need a look"
+msgstr "Bitte prüfen"
+
+#: gui.py
+#, python-brace-format
+msgid "{count} second"
+msgid_plural "{count} seconds"
+msgstr[0] "{count} Sekunde"
+msgstr[1] "{count} Sekunden"
+
+#: gui.py
+#, python-brace-format
+msgid "{count} minute"
+msgid_plural "{count} minutes"
+msgstr[0] "{count} Minute"
+msgstr[1] "{count} Minuten"
+
+#: gui.py
+#, python-brace-format
+msgid "{count} hours"
+msgstr "{count} Stunden"
+
+#: gui.py
+msgid "Language"
+msgstr "Sprache"
+
+#: gui.py
+msgid "&Help"
+msgstr "&Hilfe"
+
+#: gui.py
+msgid "&Back"
+msgstr "&Zurück"
+
+#: gui.py
+msgid "Preview plan"
+msgstr "Plan anzeigen"
+
+#: gui.py
+#, python-brace-format
+msgid "{step} (done)"
+msgstr "{step} (erledigt)"
+
+#: gui.py
+msgid "Stop"
+msgstr "Anhalten"
+
+#: gui.py
+msgid "Open organized folder"
+msgstr "Geordneten Ordner öffnen"
+
+#: gui.py
+msgid "Dark mode"
+msgstr "Dunkler Modus"
+
+#: gui.py
+msgid "Light mode"
+msgstr "Heller Modus"
+
+#: gui.py
+msgid "Fix the dates and locations in your Google Photos Takeout. Free, offline, and your original files are never changed."
+msgstr "Korrigiert Datum und Ort in Ihrem Google Fotos Takeout. Kostenlos, offline, und Ihre Originaldateien werden nie verändert."
+
+#: gui.py
+msgid "Takeout folder"
+msgstr "Takeout-Ordner"
+
+#: gui.py
+msgid "Folder with your Takeout ZIP files, or an already extracted Takeout."
+msgstr "Ordner mit Ihren Takeout-ZIP-Dateien oder ein bereits entpacktes Takeout."
+
+#: gui.py
+msgid "Save organized photos to"
+msgstr "Geordnete Fotos speichern in"
+
+#: gui.py
+msgid "A new or empty folder. Your Takeout files are never changed."
+msgstr "Ein neuer oder leerer Ordner. Ihre Takeout-Dateien werden nie verändert."
+
+#: gui.py
+msgid "Install ExifTool"
+msgstr "ExifTool installieren"
+
+#: gui.py
+msgid "Browse..."
+msgstr "Durchsuchen..."
+
+#: gui.py
+msgid "Folders"
+msgstr "Ordner"
+
+#: gui.py
+msgid "Duplicates"
+msgstr "Duplikate"
+
+#: gui.py
+msgid "Create album playlists"
+msgstr "Album-Wiedergabelisten erstellen"
+
+#: gui.py
+msgid "Time zone"
+msgstr "Zeitzone"
+
+#: gui.py
+msgid "for photos without location or camera zone; empty means this computer's zone, for example +09:00 or Asia/Tokyo"
+msgstr "für Fotos ohne Ort oder Kamera-Zeitzone; leer bedeutet die Zeitzone dieses Computers, zum Beispiel +09:00 oder Asia/Tokyo"
+
+#: gui.py
+msgid "File names"
+msgstr "Dateinamen"
+
+#: gui.py
+msgid "Name files by date:"
+msgstr "Dateien nach Datum benennen:"
+
+#: gui.py
+msgid "Name template"
+msgstr "Namensvorlage"
+
+#: gui.py
+msgid "Also make a JPG copy of each HEIC photo (the HEIC is kept)"
+msgstr "Zusätzlich eine JPG-Kopie jedes HEIC-Fotos erstellen (das HEIC bleibt erhalten)"
+
+#: gui.py
+msgid "needs takeout-organizer[heic]"
+msgstr "benötigt takeout-organizer[heic]"
+
+#: gui.py
+msgid "Add the town or city to folder names, for example 2023/06 Tokyo"
+msgstr "Ort oder Stadt an Ordnernamen anfügen, zum Beispiel 2023/06 Tokyo"
+
+#: gui.py
+msgid "needs date folders: choose another layout"
+msgstr "benötigt Datumsordner: wählen Sie eine andere Ordnerstruktur"
+
+#: gui.py
+msgid "Offline, from where each photo was taken."
+msgstr "Offline, nach dem Aufnahmeort jedes Fotos."
+
+#: gui.py
+msgid "Show: before you start"
+msgstr "Anzeigen: bevor Sie beginnen"
+
+#: gui.py
+msgid "Hide: before you start"
+msgstr "Ausblenden: bevor Sie beginnen"
+
+#: gui.py
+msgid "Show: advanced options"
+msgstr "Anzeigen: erweiterte Optionen"
+
+#: gui.py
+msgid "Hide: advanced options"
+msgstr "Ausblenden: erweiterte Optionen"
+
+#: gui.py
+msgid "Choose your Takeout folder"
+msgstr "Takeout-Ordner wählen"
+
+#: gui.py
+msgid "Choose where to save the organized photos"
+msgstr "Speicherort für die geordneten Fotos wählen"
+
+#: gui.py
+#, python-brace-format
+msgid "Problem: {message}"
+msgstr "Problem: {message}"
+
+#: gui.py
+#, python-brace-format
+msgid "Note: {message}"
+msgstr "Hinweis: {message}"
+
+#: gui.py
+msgid "Photos by year"
+msgstr "Fotos nach Jahr"
+
+#: gui.py
+msgid "Files"
+msgstr "Dateien"
+
+#: gui.py
+msgid "Folder"
+msgstr "Ordner"
+
+#: gui.py
+msgid "Open full preview report"
+msgstr "Vollständigen Vorschaubericht öffnen"
+
+#: gui.py
+msgid "Reading your Takeout. Nothing is written yet."
+msgstr "Ihr Takeout wird gelesen. Noch wird nichts geschrieben."
+
+#: gui.py
+msgid "The preview did not finish. The log says why."
+msgstr "Die Vorschau wurde nicht beendet. Das Protokoll nennt den Grund."
+
+#: gui.py
+msgid "No photos were found in this folder. Go back and choose the folder that holds your takeout-*.zip files."
+msgstr "In diesem Ordner wurden keine Fotos gefunden. Gehen Sie zurück und wählen Sie den Ordner mit Ihren takeout-*.zip-Dateien."
+
+#: gui.py
+msgid "Everything in this Takeout is already in your library. Nothing to add."
+msgstr "Alles aus diesem Takeout ist bereits in Ihrer Bibliothek. Nichts hinzuzufügen."
+
+#: gui.py
+msgid "No date"
+msgstr "Kein Datum"
+
+#: gui.py
+msgid "This is the plan. Nothing has been written yet. Organizing applies exactly this plan."
+msgstr "Das ist der Plan. Noch wurde nichts geschrieben. Beim Ordnen wird genau dieser Plan ausgeführt."
+
+#: gui.py
+#, python-brace-format
+msgid "Organize {count} file"
+msgid_plural "Organize {count} files"
+msgstr[0] "{count} Datei ordnen"
+msgstr[1] "{count} Dateien ordnen"
+
+#: gui.py
+msgid "Waiting"
+msgstr "Wartet"
+
+#: gui.py
+msgid "Progress of the current phase"
+msgstr "Fortschritt des aktuellen Schritts"
+
+#: gui.py
+msgid "Your computer will not sleep while this runs. You can stop at any time and resume later."
+msgstr "Ihr Computer geht währenddessen nicht in den Ruhezustand. Sie können jederzeit anhalten und später fortsetzen."
+
+#: gui.py
+msgid "&Show details"
+msgstr "&Details anzeigen"
+
+#: gui.py
+msgid "&Hide details"
+msgstr "&Details ausblenden"
+
+#: gui.py
+#, python-brace-format
+msgid "Warning: {message}"
+msgstr "Warnung: {message}"
+
+#: gui.py
+#, python-brace-format
+msgid "Error: {message}"
+msgstr "Fehler: {message}"
+
+#: gui.py
+#, python-brace-format
+msgid "Info: {message}"
+msgstr "Info: {message}"
+
+#: gui.py
+msgid "Starting"
+msgstr "Wird gestartet"
+
+#: gui.py
+msgid "Stop organizing?"
+msgstr "Ordnen anhalten?"
+
+#: gui.py
+msgid "Stop after the current file? Files already copied stay, and you can resume later."
+msgstr "Nach der aktuellen Datei anhalten? Bereits kopierte Dateien bleiben, und Sie können später fortsetzen."
+
+#: gui.py
+msgid "Keep going"
+msgstr "Weitermachen"
+
+#: gui.py
+msgid "Stopping after the current file"
+msgstr "Wird nach der aktuellen Datei angehalten"
+
+#: gui.py
+#, python-brace-format
+msgid "{phase}: {current} of {total}. Nothing is written yet."
+msgstr "{phase}: {current} von {total}. Noch wird nichts geschrieben."
+
+#: gui.py
+msgid "Running"
+msgstr "Läuft"
+
+#: gui.py
+#, python-brace-format
+msgid "{current} of {total} file."
+msgid_plural "{current} of {total} files."
+msgstr[0] "{current} von {total} Datei."
+msgstr[1] "{current} von {total} Dateien."
+
+#: gui.py
+#, python-brace-format
+msgid "About {time} left."
+msgstr "Noch etwa {time}."
+
+#: gui.py
+msgid "Open &report"
+msgstr "&Bericht öffnen"
+
+#: gui.py
+msgid "Open &log"
+msgstr "&Protokoll öffnen"
+
+#: gui.py
+msgid "&Start over"
+msgstr "&Neu beginnen"
+
+#: gui.py
+msgid "&Undo this run"
+msgstr "&Rückgängig machen"
+
+#: gui.py
+msgid "&Copy diagnostics"
+msgstr "Diagnose &kopieren"
+
+#: gui.py
+msgid "Diagnostics copied. Paste them into your bug report; they hold no folder paths."
+msgstr "Diagnose kopiert. Fügen Sie sie in Ihren Fehlerbericht ein; sie enthält keine Ordnerpfade."
+
+#: gui.py
+#, python-brace-format
+msgid "Stopped. {done} of {total} file is done. Resume to finish; nothing is copied twice."
+msgid_plural "Stopped. {done} of {total} files are done. Resume to finish; nothing is copied twice."
+msgstr[0] "Angehalten. {done} von {total} Datei ist fertig. Setzen Sie fort, um abzuschließen; nichts wird doppelt kopiert."
+msgstr[1] "Angehalten. {done} von {total} Dateien sind fertig. Setzen Sie fort, um abzuschließen; nichts wird doppelt kopiert."
+
+#: gui.py
+msgid "Resume"
+msgstr "Fortsetzen"
+
+#: gui.py
+msgid "The run did not finish. Open the log to see why."
+msgstr "Der Lauf wurde nicht beendet. Das Protokoll nennt den Grund."
+
+#: gui.py
+msgid "The numbers do not add up (MISMATCH). Open the report and the log."
+msgstr "Die Zahlen gehen nicht auf (MISMATCH). Öffnen Sie den Bericht und das Protokoll."
+
+#: gui.py
+msgid "No files could be written. Open the log to see why."
+msgstr "Es konnten keine Dateien geschrieben werden. Das Protokoll nennt den Grund."
+
+#: gui.py
+#, python-brace-format
+msgid "All {count} file is accounted for."
+msgid_plural "All {count} files are accounted for."
+msgstr[0] "Die {count} Datei ist erfasst."
+msgstr[1] "Alle {count} Dateien sind erfasst."
+
+#: gui.py
+#, python-brace-format
+msgid "{count} could not be copied; the report lists it."
+msgid_plural "{count} could not be copied; the report lists them."
+msgstr[0] "{count} konnte nicht kopiert werden; der Bericht nennt sie."
+msgstr[1] "{count} konnten nicht kopiert werden; der Bericht nennt sie."
+
+#: gui.py
+#, python-brace-format
+msgid "Done. All {count} file is accounted for."
+msgid_plural "Done. All {count} files are accounted for."
+msgstr[0] "Fertig. Die {count} Datei ist erfasst."
+msgstr[1] "Fertig. Alle {count} Dateien sind erfasst."
+
+#: gui.py
+#, python-brace-format
+msgid "{count} possible duplicate needs a look in the report."
+msgid_plural "{count} possible duplicates need a look in the report."
+msgstr[0] "{count} mögliches Duplikat sollten Sie im Bericht prüfen."
+msgstr[1] "{count} mögliche Duplikate sollten Sie im Bericht prüfen."
+
+#: gui.py
+#, python-brace-format
+msgid "{count} guessed date needs a look in the report."
+msgid_plural "{count} guessed dates need a look in the report."
+msgstr[0] "{count} geschätzte Datumsangabe sollten Sie im Bericht prüfen."
+msgstr[1] "{count} geschätzte Datumsangaben sollten Sie im Bericht prüfen."
+
+#: gui.py
+msgid "This run left nothing to undo."
+msgstr "Dieser Lauf hat nichts zum Rückgängigmachen hinterlassen."
+
+#: gui.py
+#, python-brace-format
+msgid "Delete {count} file ({size}) written by this run? Your Takeout files are not affected."
+msgid_plural "Delete {count} files ({size}) written by this run? Your Takeout files are not affected."
+msgstr[0] "{count} Datei ({size}) löschen, die dieser Lauf geschrieben hat? Ihre Takeout-Dateien bleiben unberührt."
+msgstr[1] "{count} Dateien ({size}) löschen, die dieser Lauf geschrieben hat? Ihre Takeout-Dateien bleiben unberührt."
+
+#: gui.py
+#, python-brace-format
+msgid "{count} file edited since will be kept."
+msgid_plural "{count} files edited since will be kept."
+msgstr[0] "{count} seitdem bearbeitete Datei wird behalten."
+msgstr[1] "{count} seitdem bearbeitete Dateien werden behalten."
+
+#: gui.py
+msgid "Undo this run?"
+msgstr "Diesen Lauf rückgängig machen?"
+
+#: gui.py
+msgid "Delete files"
+msgstr "Dateien löschen"
+
+#: gui.py
+msgid "Keep them"
+msgstr "Behalten"
+
+#: gui.py
+#, python-brace-format
+msgid "Undone. {count} file was deleted from the destination."
+msgid_plural "Undone. {count} files were deleted from the destination."
+msgstr[0] "Rückgängig gemacht. {count} Datei wurde aus dem Ziel gelöscht."
+msgstr[1] "Rückgängig gemacht. {count} Dateien wurden aus dem Ziel gelöscht."
+
+#: gui_support.py
+msgid "Choose the folder with your Takeout files."
+msgstr "Wählen Sie den Ordner mit Ihren Takeout-Dateien."
+
+#: gui_support.py
+msgid "This folder does not exist."
+msgstr "Dieser Ordner existiert nicht."
+
+#: gui_support.py
+msgid "No Takeout files found in this folder."
+msgstr "In diesem Ordner wurden keine Takeout-Dateien gefunden."
+
+#: gui_support.py
+#, python-brace-format
+msgid "{count} ZIP file found, {size}."
+msgid_plural "{count} ZIP files found, {size}."
+msgstr[0] "{count} ZIP-Datei gefunden, {size}."
+msgstr[1] "{count} ZIP-Dateien gefunden, {size}."
+
+#: gui_support.py
+#, python-brace-format
+msgid "An extracted Takeout, {size}."
+msgstr "Ein entpacktes Takeout, {size}."
+
+#: gui_support.py
+msgid "Choose where to save the organized photos."
+msgstr "Wählen Sie, wo die geordneten Fotos gespeichert werden."
+
+#: gui_support.py
+#, python-brace-format
+msgid "{size} free."
+msgstr "{size} frei."
+
+#: gui_support.py
+msgid "This folder already has photos. New photos will be added; nothing is overwritten."
+msgstr "Dieser Ordner enthält bereits Fotos. Neue Fotos werden hinzugefügt; nichts wird überschrieben."
+
+#: gui_support.py
+msgid "ExifTool not found. It writes the dates into your photos."
+msgstr "ExifTool nicht gefunden. Es schreibt die Daten in Ihre Fotos."
+
+#: gui_support.py
+#, python-brace-format
+msgid "ExifTool {version} found."
+msgstr "ExifTool {version} gefunden."
+
+#: main_processor.py
+msgid "date from Google sidecar"
+msgstr "Datum aus Google-Begleitdatei"
+
+#: main_processor.py
+msgid "date from photo EXIF"
+msgstr "Datum aus Foto-EXIF"
+
+#: main_processor.py
+msgid "date from file name"
+msgstr "Datum aus Dateiname"
+
+#: main_processor.py
+msgid "date from upload date"
+msgstr "Datum aus Hochladedatum"
+
+#: main_processor.py
+msgid "date from file time"
+msgstr "Datum aus Dateizeit"
+
+#: main_processor.py
+msgid "Total accounted"
+msgstr "Insgesamt erfasst"
+
+#: main_processor.py
+msgid "all files accounted for"
+msgstr "alle Dateien erfasst"
+
+#: main_processor.py
+msgid "Photos and videos to be written"
+msgstr "Zu schreibende Fotos und Videos"
+
+#: main_processor.py
+msgid "Photos and videos written"
+msgstr "Geschriebene Fotos und Videos"
+
+#: main_processor.py
+msgid "Input files"
+msgstr "Eingabedateien"
+
+#: main_processor.py
+#, python-brace-format
+msgid "in {folder}/ (date is a guess)"
+msgstr "in {folder}/ (Datum geschätzt)"
+
+#: main_processor.py
+msgid "metadata in an .xmp sidecar"
+msgstr "Metadaten in einer .xmp-Begleitdatei"
+
+#: main_processor.py
+msgid "without new metadata"
+msgstr "ohne neue Metadaten"
+
+#: main_processor.py
+msgid "JPG copies of HEIC photos"
+msgstr "JPG-Kopien von HEIC-Fotos"
+
+#: main_processor.py
+msgid "Already in the destination"
+msgstr "Bereits im Ziel"
+
+#: main_processor.py
+msgid "Duplicates not copied"
+msgstr "Nicht kopierte Duplikate"
+
+#: main_processor.py
+#, python-brace-format
+msgid "Other files (in {folder}/)"
+msgstr "Andere Dateien (in {folder}/)"
+
+#: main_processor.py
+msgid "Failed to copy"
+msgstr "Kopieren fehlgeschlagen"
+
+#: main_processor.py
+#, python-brace-format
+msgid "Possible duplicates kept: {count} (see the report)"
+msgstr "Mögliche Duplikate behalten: {count} (siehe Bericht)"
+
+#: main_processor.py
+#, python-brace-format
+msgid "Wrong file extension: {count} (run with --fix-extensions)"
+msgstr "Falsche Dateiendung: {count} (mit --fix-extensions ausführen)"
+
+#: main_processor.py
+#, python-brace-format
+msgid "Photos missing from the export: {count} (their sidecars are there; check that every part is here)"
+msgstr "Im Export fehlende Fotos: {count} (ihre Begleitdateien sind da; prüfen Sie, ob alle Teile vorhanden sind)"

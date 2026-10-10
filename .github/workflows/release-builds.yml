@@ -1,0 +1,130 @@
+name: Release builds
+
+# Builds the standalone apps, with ExifTool inside, and attaches them to a
+# published release: a Windows folder (zip) and an unsigned macOS .app (zip),
+# each with a .sha256 file. Linux users install with pipx.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # ExifTool bundled in the builds; checksums from https://exiftool.org/checksums.txt
+  EXIFTOOL_VERSION: "13.59"
+  EXIFTOOL_WINDOWS_SHA256: "44b512b25af500724ba579d0a53c8fc5851628b692dd5e5d94ae4a15c2cba9ec"
+  EXIFTOOL_PERL_SHA256: "668ea3acececb7235fbd0f4900e72d5f12c9b07e5c778fd36cb1e9b5828fd65a"
+  PYINSTALLER_VERSION: "6.16.0"
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    permissions:
+      contents: write   # to attach the builds to the release
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.13"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install ".[heic,timezones]" "pyinstaller==${PYINSTALLER_VERSION}"
+
+      # exiftool.org keeps the current version; SourceForge keeps every one.
+      - name: Get ExifTool (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          name="exiftool-${EXIFTOOL_VERSION}_64.zip"
+          curl -fsSL -o "$name" "https://exiftool.org/$name" \
+            || curl -fsSL -o "$name" "https://sourceforge.net/projects/exiftool/files/$name/download"
+          echo "${EXIFTOOL_WINDOWS_SHA256}  $name" | sha256sum -c -
+          unzip -q "$name" -d exiftool-package
+          package=$(dirname "$(find exiftool-package -name 'exiftool_files' -type d | head -1)")
+          mkdir -p build/exiftool
+          cp -R "$package/exiftool_files" build/exiftool/
+          if [ -f "$package/exiftool(-k).exe" ]; then
+            cp "$package/exiftool(-k).exe" build/exiftool/exiftool.exe
+          else
+            cp "$package/exiftool.exe" build/exiftool/exiftool.exe
+          fi
+          cp "$package"/README* build/exiftool/ 2>/dev/null || true
+          echo "EXIFTOOL_DIR=$(pwd -W)/build/exiftool" >> "$GITHUB_ENV"
+
+      - name: Get ExifTool (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          name="Image-ExifTool-${EXIFTOOL_VERSION}.tar.gz"
+          curl -fsSL -o "$name" "https://exiftool.org/$name" \
+            || curl -fsSL -o "$name" "https://sourceforge.net/projects/exiftool/files/$name/download"
+          echo "${EXIFTOOL_PERL_SHA256}  $name" | shasum -a 256 -c -
+          tar -xzf "$name"
+          mkdir -p build/exiftool
+          cp -R "Image-ExifTool-${EXIFTOOL_VERSION}/exiftool" "Image-ExifTool-${EXIFTOOL_VERSION}/lib" build/exiftool/
+          cp "Image-ExifTool-${EXIFTOOL_VERSION}/README" build/exiftool/README.txt
+          chmod +x build/exiftool/exiftool
+          echo "EXIFTOOL_DIR=$(pwd)/build/exiftool" >> "$GITHUB_ENV"
+
+      - name: Collect license notices
+        run: python packaging/collect_licenses.py "$EXIFTOOL_DIR"
+
+      - name: Build
+        run: pyinstaller --noconfirm packaging/takeout-organizer.spec
+
+      # With ExifTool off the PATH, so the bundled one must be the one used.
+      - name: Smoke test (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          PATH="/usr/bin:/bin:/c/Windows/System32:/c/Windows:$(dirname "$(which python)")" \
+            python packaging/smoke_test.py "dist/Takeout Organizer/takeout-organizer.exe"
+
+      - name: Window self-test (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $env:TAKEOUT_ORGANIZER_SELFTEST = '1'
+          $p = Start-Process -FilePath 'dist\Takeout Organizer\Takeout Organizer.exe' -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "The window app exited with $($p.ExitCode)" }
+
+      - name: Smoke test (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew uninstall --ignore-dependencies exiftool 2>/dev/null || true
+          python packaging/smoke_test.py "dist/Takeout Organizer.app/Contents/MacOS/takeout-organizer"
+          TAKEOUT_ORGANIZER_SELFTEST=1 "dist/Takeout Organizer.app/Contents/MacOS/Takeout Organizer"
+
+      - name: Package
+        run: |
+          version=$(python -c "import takeout_organizer; print(takeout_organizer.__version__)")
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            archive="Takeout-Organizer-${version}-windows-x64.zip"
+            (cd dist && 7z a -tzip -bd "../$archive" "Takeout Organizer" > /dev/null)
+            sha256sum "$archive" > "$archive.sha256"
+          else
+            archive="Takeout-Organizer-${version}-macos-$(uname -m).zip"
+            ditto -c -k --keepParent "dist/Takeout Organizer.app" "$archive"
+            shasum -a 256 "$archive" > "$archive.sha256"
+          fi
+          echo "ARCHIVE=$archive" >> "$GITHUB_ENV"
+          ls -l "$archive"; cat "$archive.sha256"
+
+      - name: Attach to the release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" "$ARCHIVE" "$ARCHIVE.sha256" --clobber

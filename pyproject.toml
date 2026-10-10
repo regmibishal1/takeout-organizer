@@ -1,0 +1,69 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "takeout-organizer"
+version = "0.1.0"
+description = "Fix the dates and locations in your Google Photos Takeout. Free, offline, and your original files are never changed."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Bishal Regmi" }]
+keywords = ["google-photos", "takeout", "exif", "metadata", "photo-organizer"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Utilities",
+]
+# Pillow powers perceptual de-duplication (matching re-compressed copies of the
+# same photo); sv-ttk (MIT, pure Python) gives the window its light and dark
+# themes. exiftool is an external binary the user installs separately (README).
+dependencies = ["pillow>=10.0", "sv-ttk>=2.6"]
+
+[project.optional-dependencies]
+# Lets duplicate detection compare HEIC/HEIF (iPhone) photos visually.
+heic = ["pi-heif>=1.0"]
+# Writes each photo's time in the zone where it was taken, from its GPS position.
+# tzdata supplies zone names on Windows, which has no zone database of its own.
+timezones = ["tzfpy>=1.0", "tzdata"]
+# Pinned so CI only changes when these are bumped on purpose. pillow-heif only
+# writes test HEIC files; the tool itself decodes with pi-heif.
+dev = ["pytest==9.1.1", "ruff==0.17.0", "pillow-heif==1.8.0", "hypothesis==6.168.1"]
+
+[project.scripts]
+takeout-organizer = "takeout_organizer.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/regmibishal1/takeout-organizer"
+Issues = "https://github.com/regmibishal1/takeout-organizer/issues"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# Place names for --place-names (GeoNames, CC BY 4.0; packaging/make_places.py) and the
+# window's translations (packaging/update_translations.py).
+[tool.setuptools.package-data]
+takeout_organizer = ["data/*.tsv", "locale/*.po"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q"
+# Print every thread's stack when a test runs longer than this (seconds); a
+# test still running at HANG_SECONDS (tests/conftest.py) ends the run.
+faulthandler_timeout = 120
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+# Explicit, so a ruff upgrade cannot change what CI checks. These are the rules
+# CI has always run (pyflakes plus the pycodestyle errors).
+select = ["E4", "E7", "E9", "F"]

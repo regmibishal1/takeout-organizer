@@ -1,0 +1,24 @@
+case,media,sidecar,title,extra_files,expected_sidecar,expected_rule
+exact name,IMG_1234.jpg,IMG_1234.jpg.json,IMG_1234.jpg,,IMG_1234.jpg.json,exact
+no extension,IMG_1234.jpg,IMG_1234.json,IMG_1234.jpg,,IMG_1234.json,no-extension
+"supplemental, full",IMG_1234.jpg,IMG_1234.jpg.supplemental-metadata.json,IMG_1234.jpg,,IMG_1234.jpg.supplemental-metadata.json,supplemental
+"supplemental, cut",IMG_1234.jpg,IMG_1234.jpg.supplemental-metad.json,IMG_1234.jpg,,IMG_1234.jpg.supplemental-metad.json,supplemental
+"supplemental, shortest",IMG_1234.jpg,IMG_1234.jpg.s.json,IMG_1234.jpg,,IMG_1234.jpg.s.json,supplemental
+"counter, old naming",IMG_1234(1).jpg,IMG_1234.jpg(1).json,IMG_1234.jpg,,IMG_1234.jpg(1).json,counter
+"counter, new naming",IMG_1234(1).jpg,IMG_1234.jpg.supplemental-metadata(1).json,IMG_1234.jpg,,IMG_1234.jpg.supplemental-metadata(1).json,counter
+"counter, new naming cut",IMG_1234(2).jpg,IMG_1234.jpg.supplemental-met(2).json,IMG_1234.jpg,,IMG_1234.jpg.supplemental-met(2).json,counter
+edited copy,IMG_1234-edited.jpg,IMG_1234.jpg.json,IMG_1234.jpg,,IMG_1234.jpg.json,edited
+"edited copy, German, new naming",IMG_1234-bearbeitet.jpg,IMG_1234.jpg.supplemental-metadata.json,IMG_1234.jpg,,IMG_1234.jpg.supplemental-metadata.json,edited
+"edited copy, French",IMG_1234-modifi\u00e9.jpg,IMG_1234.jpg.json,IMG_1234.jpg,,IMG_1234.jpg.json,edited
+jpeg named jpg in sidecar,IMG_1234.jpeg,IMG_1234.jpg.json,IMG_1234.jpeg,,IMG_1234.jpg.json,alt-extension
+"long name, sidecar cut at 46",Screenshot_20230615-123456_A_Very_Long_Application_Name.jpg,Screenshot_20230615-123456_A_Very_Long_Applica.json,Screenshot_20230615-123456_A_Very_Long_Application_Name.jpg,,Screenshot_20230615-123456_A_Very_Long_Applica.json,truncated
+"long name, other photo's sidecar",Screenshot_20230615-123456_A_Very_Long_Application_Name.jpg,Screenshot_20230615-123456_A_Very_Long_Applica.json,Screenshot_20230615-123456_A_Very_Long_AOther.jpg,,,
+prefix of another name,IMG_7.jpg,IMG_77.jpg.json,IMG_77.jpg,,,
+title names another format,photo.jpg,photo.json,photo.png,,,
+title with a character files cannot hold,a_b.jpg,a_b.json,a/b.jpg,,a_b.json,no-extension
+no title in sidecar,IMG_5.jpg,IMG_5.json,-,,IMG_5.json,no-extension
+decomposed accent in file name,Cafe\u0301.jpg,Caf\u00e9.jpg.json,Caf\u00e9.jpg,,Caf\u00e9.jpg.json,exact
+different case,IMG_1.JPG,img_1.jpg.json,IMG_1.JPG,,img_1.jpg.json,exact
+Pixel motion photo video,PXL_20230615_123456789.MP,PXL_20230615_123456789.MP.supplemental-metadata.json,PXL_20230615_123456789.MP,,PXL_20230615_123456789.MP.supplemental-metadata.json,supplemental
+Live Photo video,IMG_9.MOV,IMG_9.HEIC.json,IMG_9.HEIC,IMG_9.HEIC,IMG_9.HEIC.json,live
+Pixel motion video beside its still,PXL_3.MP,PXL_3.MP.jpg.json,PXL_3.MP.jpg,PXL_3.MP.jpg,PXL_3.MP.jpg.json,live
