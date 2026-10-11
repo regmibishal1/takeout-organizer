@@ -123,6 +123,44 @@ def test_space_shortage_into_a_full_library_only_warns(tmp_path, monkeypatch):
     assert not result.problems and "already there" in result.warnings[0]
 
 
+def test_on_one_drive_the_space_check_counts_the_larger_need_once(tmp_path, monkeypatch):
+    # Work folder and library on one drive: finished files are moved, so the
+    # run needs room for the larger of the two, and says how much.
+    src = tmp_path / "src"
+    src.mkdir()
+    _takeout_zip(src / "takeout-001.zip", {"A.jpg": _jpeg()})
+    monkeypatch.setattr(preflight, "_free", lambda path: 10)
+    monkeypatch.setattr(preflight, "_same_drive", lambda a, b: True)
+    result = preflight.check(str(src), str(tmp_path / "out"), str(tmp_path / "work"),
+                             dry_run=False)
+    assert len(result.problems) == 1 and result.problems[0].startswith("Not enough space on ")
+    assert "Free some space, or use --work-dir on another drive." in result.problems[0]
+
+    # Into a library that already has files, a rerun may need far less: a warning.
+    library = tmp_path / "library"
+    library.mkdir()
+    (library / "old.jpg").write_bytes(_jpeg())
+    monkeypatch.setattr(preflight, "_free", lambda path: 10 ** 12 if "work" in path else 10)
+    result = preflight.check(str(src), str(library), str(tmp_path / "work"), dry_run=False)
+    assert not result.problems
+
+
+def test_a_fat32_destination_warns_about_files_it_cannot_hold(tmp_path, monkeypatch):
+    src = tmp_path / "src"
+    src.mkdir()
+    _takeout_zip(src / "takeout-001.zip", {"A.jpg": _jpeg(), "B.mp4": b"x" * 4000})
+    monkeypatch.setattr(preflight, "filesystem_name", lambda path: "FAT32")
+    monkeypatch.setattr(preflight, "FAT32_MAX_FILE", 1000)   # B.mp4 stands in for a 5 GB video
+    result = preflight.check(str(src), str(tmp_path / "out"), str(tmp_path / "work"),
+                             dry_run=False)
+    assert ("This drive is FAT32 and cannot hold files over 4 GB. 1 of the files is larger "
+            "and will fail to copy.") in " ".join(result.warnings)
+    # A preview writes nothing there, so it does not warn.
+    preview = preflight.check(str(src), str(tmp_path / "out"), str(tmp_path / "work"),
+                              dry_run=True)
+    assert not any("FAT32" in w for w in preview.warnings)
+
+
 def test_work_dir_must_exist_and_be_outside_the_source(tmp_path):
     src = tmp_path / "src"
     (src / "inner").mkdir(parents=True)

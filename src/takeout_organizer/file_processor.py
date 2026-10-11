@@ -410,35 +410,6 @@ class FileProcessor:
         }[self.layout]
         return os.path.join(dest_base, *parts)
 
-    def organize_by_date(self, src_file: str, dest_base: str,
-                         date: Optional[datetime] = None, create_dirs: bool = True) -> str:
-        """
-        Organize file into date-based directory structure (YYYY/MM/DD)
-
-        Args:
-            src_file: Source file path
-            dest_base: Base destination directory
-            date: Date to use for organization (if None, uses file modification date)
-            create_dirs: If False (dry run), only compute the path
-
-        Returns:
-            Destination file path
-        """
-        day_dir = self.date_folder(src_file, dest_base, date)
-
-        if create_dirs:
-            os.makedirs(day_dir, exist_ok=True)
-
-        # Determine destination filename
-        filename = os.path.basename(src_file)
-        dest_path = os.path.join(day_dir, filename)
-
-        # Handle name collision
-        if os.path.exists(dest_path):
-            dest_path = self._get_unique_filename(dest_path)
-
-        return dest_path
-
     def find_identical_copy(self, src_file: str, dest_path: str) -> Optional[str]:
         """
         Find a byte-identical copy of src_file already at dest_path or at one of
@@ -566,43 +537,4 @@ class FileProcessor:
         except Exception as e:
             self.logger.error(f"Error cleaning up {temp_dir}: {e}")
 
-    def get_file_size(self, filepath: str) -> int:
-        """Get file size in bytes"""
-        return os.path.getsize(filepath)
 
-    def get_directory_size(self, directory: str) -> int:
-        """Get total size of directory in bytes"""
-        total_size = 0
-
-        for root, dirs, files in os.walk(directory):
-            for file in files:
-                file_path = os.path.join(root, file)
-                try:
-                    total_size += os.path.getsize(file_path)
-                except Exception:
-                    pass
-
-        return total_size
-
-    def count_files(self, directory: str, extensions: Optional[List[str]] = None) -> int:
-        """
-        Count files in directory, optionally filtering by extension
-
-        Args:
-            directory: Directory to search
-            extensions: List of extensions to count (e.g., ['.jpg', '.mp4'])
-
-        Returns:
-            Number of files
-        """
-        count = 0
-
-        for root, dirs, files in os.walk(directory):
-            for file in files:
-                if extensions:
-                    if any(file.lower().endswith(ext) for ext in extensions):
-                        count += 1
-                else:
-                    count += 1
-
-        return count

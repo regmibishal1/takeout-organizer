@@ -884,63 +884,6 @@ class MetadataHandler:
             data = []
         return data[0] if data else {}
 
-    def apply_metadata(self, media_path: str, json_path: str,
-                       is_image: bool, preserve_original: bool = False) -> bool:
-        """
-        Apply metadata from JSON to media file
-
-        Args:
-            media_path: Path to media file
-            json_path: Path to JSON metadata file
-            is_image: True if media is image, False if video
-            preserve_original: If True, keep original file as backup
-
-        Returns:
-            True if successful, False otherwise
-        """
-        # Extract metadata from JSON
-        metadata = self.extract_metadata_from_json(json_path)
-
-        if not metadata:
-            raise ValueError("No metadata extracted from JSON")
-
-        # Apply to image or video
-        if is_image:
-            return self.apply_metadata_to_image(media_path, metadata, preserve_original)
-        else:
-            return self.apply_metadata_to_video(media_path, metadata, preserve_original)
-
-    def verify_metadata(self, media_path: str) -> Dict[str, Any]:
-        """
-        Verify metadata was applied to a file
-
-        Args:
-            media_path: Path to media file
-
-        Returns:
-            Dictionary with metadata information
-        """
-        try:
-            result = self._run_exiftool([
-                '-DateTimeOriginal',
-                '-GPSLatitude',
-                '-GPSLongitude',
-                '-Description',
-                '-Rating',
-                '-json',
-                os.path.abspath(media_path)
-            ])
-
-            if result.returncode == 0:
-                data = json.loads(result.stdout)
-                if data:
-                    return data[0]
-
-            return {}
-
-        except Exception:
-            return {}
-
     def get_exiftool_version(self) -> str:
         """Get ExifTool version"""
         try:

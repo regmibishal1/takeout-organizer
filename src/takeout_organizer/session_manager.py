@@ -121,23 +121,6 @@ class SessionManager:
         self.state['statistics']['failed_files'] += 1
         self.save()
 
-    def mark_file_skipped(self, file_path: str, reason: str):
-        """Mark a file as skipped with reason"""
-        self.state['skipped_files'].append({
-            'file': file_path,
-            'reason': reason,
-            'timestamp': datetime.now().isoformat()
-        })
-        self.save()
-
-    def is_file_processed(self, file_path: str) -> bool:
-        """Check if file was already processed"""
-        return file_path in self.state['processed_files']
-
-    def is_duplicate(self, file_hash: str) -> Optional[str]:
-        """Check if file hash already exists, return original path if duplicate"""
-        return self.state['file_hashes'].get(file_hash)
-
     def add_error(self, error_msg: str, details: Optional[Dict] = None):
         """Add error to session log"""
         error_entry = {
@@ -172,25 +155,6 @@ class SessionManager:
         """Increment a statistic counter"""
         if key in self.state['statistics']:
             self.state['statistics'][key] += amount
-
-    def get_progress(self) -> Dict:
-        """Get current progress information"""
-        stats = self.state['statistics']
-        total_files = stats.get('total_media_files', 0)
-        processed = stats.get('processed_files', 0)
-
-        progress_pct = 0
-        if total_files > 0:
-            progress_pct = (processed / total_files) * 100
-
-        return {
-            'phase': self.state['phase'],
-            'processed': processed,
-            'total': total_files,
-            'percentage': progress_pct,
-            'failed': stats.get('failed_files', 0),
-            'skipped': stats.get('skipped_duplicates', 0)
-        }
 
     def generate_report(self) -> str:
         """Generate a final processing report"""
