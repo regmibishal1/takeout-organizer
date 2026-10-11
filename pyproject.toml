@@ -31,7 +31,7 @@ heic = ["pi-heif>=1.0"]
 timezones = ["tzfpy>=1.0", "tzdata"]
 # Pinned so CI only changes when these are bumped on purpose. pillow-heif only
 # writes test HEIC files; the tool itself decodes with pi-heif.
-dev = ["pytest==9.1.1", "ruff==0.17.0", "pillow-heif==1.8.0", "hypothesis==6.168.1"]
+dev = ["pytest==9.1.1", "ruff==0.17.0", "pillow-heif==1.8.0", "hypothesis==6.168.5"]
 
 [project.scripts]
 takeout-organizer = "takeout_organizer.cli:main"
