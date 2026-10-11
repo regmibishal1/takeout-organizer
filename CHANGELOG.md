@@ -5,7 +5,7 @@ All notable changes are listed here. The format follows
 [Semantic Versioning](https://semver.org/). Changes to how sidecars are matched are always
 listed, since they change which date a photo gets.
 
-## [Unreleased]
+## [0.2.0] - 2026-10-11
 
 ### Changed
 

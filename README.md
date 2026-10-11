@@ -79,7 +79,7 @@ pipx install "git+https://github.com/regmibishal1/takeout-organizer"
 ```
 
 Or download the wheel from the Releases page and run
-`pipx install takeout_organizer-0.1.0-py3-none-any.whl`.
+`pipx install takeout_organizer-0.2.0-py3-none-any.whl`.
 
 With the optional extras for time zones from GPS and iPhone (HEIC) duplicates:
 
