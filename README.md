@@ -355,8 +355,9 @@ scripts.
 
 The window is in English, German, French and Spanish. It follows your system's language;
 choose another in the list at the top of the window (before you start a preview), and the
-window remembers it. Logs, reports, the command line, `diagnose` and some error messages
-stay in English on purpose, so a bug report reads the same for everyone.
+window remembers it. Problems it shows, such as a folder that cannot be used or too little
+space, are in its language too. Logs, reports, the command line and `diagnose` stay in
+English on purpose, so a bug report reads the same for everyone.
 
 The German, French and Spanish texts have not been reviewed by native speakers yet.
 Corrections are welcome: the texts are in

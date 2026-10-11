@@ -599,6 +599,56 @@ msgid "all files accounted for"
 msgstr "tous les fichiers comptabilisés"
 
 #: main_processor.py
+#, python-brace-format
+msgid "The Takeout folder does not exist: {folder}"
+msgstr "Le dossier Takeout n'existe pas : {folder}"
+
+#: main_processor.py
+msgid "The destination is inside the Takeout folder. Choose a different folder."
+msgstr "La destination est dans le dossier Takeout. Choisissez un autre dossier."
+
+#: main_processor.py
+msgid "The Takeout folder is inside the destination. Choose a different folder."
+msgstr "Le dossier Takeout est dans la destination. Choisissez un autre dossier."
+
+#: main_processor.py
+#, python-brace-format
+msgid "Another run is using this folder ({who})."
+msgstr "Une autre exécution utilise ce dossier ({who})."
+
+#: main_processor.py
+msgid "The plan"
+msgstr "Le plan"
+
+#: main_processor.py
+msgid "The stopped run"
+msgstr "L'exécution arrêtée"
+
+#: main_processor.py
+#, python-brace-format
+msgid "{file} holds no plan. Make one with the plan command."
+msgstr "{file} ne contient aucun plan. Créez-en un avec la commande plan."
+
+#: main_processor.py
+#, python-brace-format
+msgid "{earlier} was made with other settings ({settings}). Use the same options, or start again without --resume or --plan."
+msgstr "{earlier} a été fait avec d'autres réglages ({settings}). Utilisez les mêmes options, ou recommencez sans --resume ni --plan."
+
+#: main_processor.py
+#, python-brace-format
+msgid "The export changed since the plan was made ({count} file differs). Make a new plan."
+msgid_plural "The export changed since the plan was made ({count} files differ). Make a new plan."
+msgstr[0] "L'export a changé depuis le plan ({count} fichier diffère). Créez un nouveau plan."
+msgstr[1] "L'export a changé depuis le plan ({count} fichiers diffèrent). Créez un nouveau plan."
+
+#: main_processor.py
+#, python-brace-format
+msgid "The export changed since the stopped run was made ({count} file differs). Run again without --resume."
+msgid_plural "The export changed since the stopped run was made ({count} files differ). Run again without --resume."
+msgstr[0] "L'export a changé depuis l'exécution arrêtée ({count} fichier diffère). Relancez sans --resume."
+msgstr[1] "L'export a changé depuis l'exécution arrêtée ({count} fichiers diffèrent). Relancez sans --resume."
+
+#: main_processor.py
 msgid "Photos and videos to be written"
 msgstr "Photos et vidéos à écrire"
 
@@ -658,3 +708,98 @@ msgstr "Extension de fichier incorrecte : {count} (relancez avec --fix-extension
 #, python-brace-format
 msgid "Photos missing from the export: {count} (their sidecars are there; check that every part is here)"
 msgstr "Photos absentes de l'export : {count} (leurs fichiers annexes sont là ; vérifiez que toutes les parties sont présentes)"
+
+#: preflight.py
+#, python-brace-format
+msgid "{zip} is damaged (it may not have finished downloading). Download it again; your other files are fine."
+msgstr "{zip} est endommagé (le téléchargement n'est peut-être pas terminé). Téléchargez-le à nouveau ; vos autres fichiers sont intacts."
+
+#: preflight.py
+#, python-brace-format
+msgid "{zip} holds {count} files, more than a Takeout part ever does. It is probably damaged or not from Google Takeout. Move it out of the folder and run again."
+msgstr "{zip} contient {count} fichiers, plus qu'aucune partie de Takeout. Il est sans doute endommagé ou ne vient pas de Google Takeout. Sortez-le du dossier et relancez."
+
+#: preflight.py
+#, python-brace-format
+msgid "{zip} would expand from {packed} to {expanded}, more than {times} times its size; Takeout parts barely compress. It is probably damaged or not from Google Takeout. Move it out of the folder and run again."
+msgstr "{zip} passerait de {packed} à {expanded}, plus de {times} fois sa taille ; les parties de Takeout se compressent à peine. Il est sans doute endommagé ou ne vient pas de Google Takeout. Sortez-le du dossier et relancez."
+
+#: preflight.py
+#, python-brace-format
+msgid "Part {part} of {last} is missing. Download it into the same folder, or the photos in it will not be organized."
+msgstr "La partie {part} sur {last} manque. Téléchargez-la dans le même dossier, sinon les photos qu'elle contient ne seront pas organisées."
+
+#: preflight.py
+#, python-brace-format
+msgid "Not enough space on {drive}: the run needs about {need}, {free} is free. Free some space, or use --work-dir on another drive. (It may fit if most files are already there.)"
+msgstr "Pas assez d'espace sur {drive} : l'exécution a besoin d'environ {need}, {free} sont libres. Libérez de l'espace, ou utilisez --work-dir sur un autre disque. (Cela peut suffire si la plupart des fichiers y sont déjà.)"
+
+#: preflight.py
+#, python-brace-format
+msgid "Not enough space on {drive}: the run needs about {need}, {free} is free. Free some space, or use --work-dir on another drive."
+msgstr "Pas assez d'espace sur {drive} : l'exécution a besoin d'environ {need}, {free} sont libres. Libérez de l'espace, ou utilisez --work-dir sur un autre disque."
+
+#: preflight.py
+#, python-brace-format
+msgid "Not enough space for the working copy on {drive}: needs about {need}, {free} is free. Use --work-dir on a larger drive."
+msgstr "Pas assez d'espace pour la copie de travail sur {drive} : il faut environ {need}, {free} sont libres. Utilisez --work-dir sur un disque plus grand."
+
+#: preflight.py
+#, python-brace-format
+msgid "Not enough space on {drive} for the organized photos: needs about {need}, {free} is free. (It may fit if most files are already there.)"
+msgstr "Pas assez d'espace sur {drive} pour les photos organisées : il faut environ {need}, {free} sont libres. (Cela peut suffire si la plupart des fichiers y sont déjà.)"
+
+#: preflight.py
+#, python-brace-format
+msgid "Not enough space on {drive} for the organized photos: needs about {need}, {free} is free."
+msgstr "Pas assez d'espace sur {drive} pour les photos organisées : il faut environ {need}, {free} sont libres."
+
+#: preflight.py
+#, python-brace-format
+msgid "This drive is FAT32 and cannot hold files over 4 GB. {count} of the files is larger and will fail to copy. Use a drive formatted as exFAT or NTFS."
+msgid_plural "This drive is FAT32 and cannot hold files over 4 GB. {count} of the files are larger and will fail to copy. Use a drive formatted as exFAT or NTFS."
+msgstr[0] "Ce disque est en FAT32 et ne peut pas contenir de fichiers de plus de 4 Go. {count} des fichiers est plus gros et ne sera pas copié. Utilisez un disque formaté en exFAT ou NTFS."
+msgstr[1] "Ce disque est en FAT32 et ne peut pas contenir de fichiers de plus de 4 Go. {count} des fichiers sont plus gros et ne seront pas copiés. Utilisez un disque formaté en exFAT ou NTFS."
+
+#: dates.py
+#, python-brace-format
+msgid "Time zone offset out of range: {zone}"
+msgstr "Décalage horaire hors limites : {zone}"
+
+#: dates.py
+#, python-brace-format
+msgid "Unknown time zone: {zone}. Use an offset such as +09:00, or a name such as Asia/Tokyo (names need: pip install tzdata on Windows)."
+msgstr "Fuseau horaire inconnu : {zone}. Utilisez un décalage comme +09:00, ou un nom comme Asia/Tokyo (sous Windows, les noms nécessitent : pip install tzdata)."
+
+#: naming.py
+#, python-brace-format
+msgid "The name template {template} is not valid ({reason})."
+msgstr "Le modèle de nom {template} n'est pas valide ({reason})."
+
+#: naming.py
+#, python-brace-format
+msgid "The name template uses {fields}; it can use {{date}}, {{date:FORMAT}} and {{name}}."
+msgstr "Le modèle de nom utilise {fields} ; il peut utiliser {{date}}, {{date:FORMAT}} et {{name}}."
+
+#: naming.py
+#, python-brace-format
+msgid "The name template must use {{date}} or {{name}}, or every photo would get the same name."
+msgstr "Le modèle de nom doit utiliser {{date}} ou {{name}}, sinon toutes les photos auraient le même nom."
+
+#: undo.py
+#, python-brace-format
+msgid "No runs are recorded in {folder}."
+msgstr "Aucune exécution n'est enregistrée dans {folder}."
+
+#: undo.py
+#, python-brace-format
+msgid "Run {run} was not found, or was already undone."
+msgstr "L'exécution {run} est introuvable, ou a déjà été annulée."
+
+#: undo.py
+msgid "No run with files to undo was found."
+msgstr "Aucune exécution avec des fichiers à annuler."
+
+#: metadata_handler.py
+msgid "ExifTool not found. Install it (Windows: winget install OliverBetz.ExifTool, macOS: brew install exiftool, Debian/Ubuntu: sudo apt install libimage-exiftool-perl) or pass --exiftool PATH."
+msgstr "ExifTool introuvable. Installez-le (Windows : winget install OliverBetz.ExifTool, macOS : brew install exiftool, Debian/Ubuntu : sudo apt install libimage-exiftool-perl) ou indiquez --exiftool CHEMIN."

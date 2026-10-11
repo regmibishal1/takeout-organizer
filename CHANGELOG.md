@@ -7,6 +7,13 @@ listed, since they change which date a photo gets.
 
 ## [Unreleased]
 
+### Changed
+
+- The problems the window shows are in its language too: a folder that cannot be used, the
+  checks before a run (space, missing or damaged ZIP parts, FAT32), an unknown time zone, a
+  name template that cannot work, another run using the folder, a plan or stopped run that
+  no longer fits, and nothing to undo. The command line and the logs keep the English.
+
 ### Fixed
 
 - The window at 125 % or 150 % display scaling: spacing, text widths, table columns and the

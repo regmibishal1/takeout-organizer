@@ -13,6 +13,7 @@ import os
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
+from .i18n import Text
 from .manifest import Manifest
 from .runguard import STATE_DIR
 
@@ -51,13 +52,13 @@ def plan(dest: str, run_id: Optional[str] = None) -> Tuple[Optional[UndoPlan], s
     """What undoing a run would delete. Returns (plan, '') or (None, reason)."""
     path = manifest_path(dest)
     if not os.path.exists(path):
-        return None, f"No runs are recorded in {dest}."
+        return None, Text("No runs are recorded in {folder}.", folder=dest)
     manifest = Manifest(path)
     try:
         run = find_run(manifest, run_id)
         if run is None:
-            return None, (f"Run {run_id} was not found, or was already undone." if run_id
-                          else "No run with files to undo was found.")
+            return None, (Text("Run {run} was not found, or was already undone.", run=run_id)
+                          if run_id else Text("No run with files to undo was found."))
         result = UndoPlan(run_id=run['run_id'], started=run['started'])
         for row in manifest.files(run['run_id']):
             if row['status'] != 'done':

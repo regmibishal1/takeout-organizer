@@ -15,6 +15,7 @@ from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime, timezone, tzinfo
 
 from .exiftool import ExifToolProcess, argfile_line
+from .i18n import Text
 from .dates import (
     camera_offset, exif_datestr, offset_text, parse_exif_date, parse_offset, to_local,
     utc_agrees, zone_for_location,
@@ -247,11 +248,10 @@ def _writes_file_create_date() -> bool:
 class MetadataHandler:
     """Handles metadata extraction and application using ExifTool"""
 
-    _MISSING_MSG = (
+    _MISSING_MSG = Text(
         "ExifTool not found. Install it (Windows: winget install OliverBetz.ExifTool, "
         "macOS: brew install exiftool, Debian/Ubuntu: sudo apt install "
-        "libimage-exiftool-perl) or pass --exiftool PATH."
-    )
+        "libimage-exiftool-perl) or pass --exiftool PATH.")
 
     def __init__(self, exiftool_path: Optional[str] = None, require: bool = True, *,
                  timezone: Optional[tzinfo] = None, date_policy: str = GOOGLE_FIRST,

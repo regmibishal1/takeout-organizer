@@ -31,7 +31,7 @@ from . import report as html_report
 from .manifest import Manifest, input_id as make_input_id
 from .deduplicator import DedupResult, build_item, deduplicate, is_image_path, sha256
 from . import naming, places
-from .i18n import N_
+from .i18n import N_, Text
 
 
 # ExifTool processes writing metadata at once (phase 4), each into its own
@@ -110,7 +110,12 @@ def summary_text(table: Dict[str, Any], translate: Callable[[str], str] = lambda
 
 class SetupError(Exception):
     """A problem found before any work starts (bad folders, ExifTool missing).
-    The message is written for the user and says what to do."""
+    The message is written for the user and says what to do. Several messages
+    are kept apart (messages), for the window to show each in its language."""
+
+    def __init__(self, *messages: str):
+        super().__init__("\n".join(messages))
+        self.messages = messages
 
 
 def _is_inside(child: str, parent: str) -> bool:
@@ -130,15 +135,14 @@ def check_folders(source_folder: str, dest_folder: str) -> None:
     the next run, and the reverse would write into the export being read.
     """
     if not os.path.isdir(source_folder):
-        raise SetupError(f"The Takeout folder does not exist: {source_folder}")
+        raise SetupError(Text("The Takeout folder does not exist: {folder}",
+                              folder=source_folder))
     if _is_inside(dest_folder, source_folder):
-        raise SetupError(
-            "The destination is inside the Takeout folder. Choose a different folder."
-        )
+        raise SetupError(Text(
+            "The destination is inside the Takeout folder. Choose a different folder."))
     if _is_inside(source_folder, dest_folder):
-        raise SetupError(
-            "The Takeout folder is inside the destination. Choose a different folder."
-        )
+        raise SetupError(Text(
+            "The Takeout folder is inside the destination. Choose a different folder."))
 
 
 class MainProcessor:
@@ -291,7 +295,7 @@ class MainProcessor:
         try:
             zone = parse_timezone(time_zone) if time_zone else None
         except ValueError as exc:
-            raise SetupError(str(exc)) from exc
+            raise SetupError(exc.args[0] if exc.args else str(exc)) from exc
         try:
             # A dry run previews the plan and never writes metadata, so
             # exiftool isn't required for it.
@@ -303,7 +307,7 @@ class MainProcessor:
                 keep_open=True,
             )
         except (RuntimeError, ValueError) as exc:
-            raise SetupError(str(exc)) from exc
+            raise SetupError(exc.args[0] if exc.args else str(exc)) from exc
 
         if resume and plan_file:
             raise SetupError("Use either --resume or --plan, not both.")
@@ -324,7 +328,7 @@ class MainProcessor:
         try:
             self.rename = naming.check_template(rename) if rename else None
         except ValueError as exc:
-            raise SetupError(str(exc)) from None
+            raise SetupError(exc.args[0] if exc.args else str(exc)) from None
         # --place-names: the town or city goes on the date folder (2023/06 Tokyo).
         if place_names and layout == 'flat':
             raise SetupError("Place names go on the date folders, and the flat layout has "
@@ -358,7 +362,7 @@ class MainProcessor:
         preflight = preflight_check(source_folder, dest_folder, self.work_root, dry_run,
                                     heic_copies=bool(heic_copies))
         if preflight.problems:
-            raise SetupError("\n".join(preflight.problems))
+            raise SetupError(*preflight.problems)
         self.preflight_warnings = preflight.warnings
 
         # One run at a time per destination: two would copy over each other.
@@ -366,7 +370,7 @@ class MainProcessor:
         if not dry_run:
             busy = self.lock.acquire()
             if busy:
-                raise SetupError(f"Another run is using this folder ({busy}).")
+                raise SetupError(Text("Another run is using this folder ({who}).", who=busy))
         self.keep_awake = KeepAwake()
 
         # Where the log and reports go. A dry run must leave dest untouched.
@@ -927,17 +931,18 @@ class MainProcessor:
         if self.plan_file:
             source = Manifest(self.plan_file)
             candidates = [r for r in source.runs() if r['dry_run']]
-            label = "The plan"
+            label = Text("The plan")
         else:
             source = self.manifest
             candidates = [r for r in source.runs() if r['run_id'] != self.run_id
                           and not r['dry_run']
                           and r['status'] in ('stopped', 'failed', 'running', 'declined')]
-            label = "The stopped run"
+            label = Text("The stopped run")
         try:
             if not candidates:
                 if self.plan_file:
-                    self.problem = f"{self.plan_file} holds no plan. Make one with the plan command."
+                    self.problem = Text("{file} holds no plan. Make one with the plan command.",
+                                        file=self.plan_file)
                     self.logger.error(self.problem)
                     return False
                 self.logger.info("No unfinished run to resume; doing a full run")
@@ -962,8 +967,10 @@ class MainProcessor:
         # A setting an older version did not record was off then (None == False).
         changed = [k for k in self._PLAN_SETTINGS if (before.get(k) or None) != (now[k] or None)]
         if changed:
-            self.problem = (f"{label} was made with other settings ({', '.join(changed)}). "
-                            "Use the same options, or start again without --resume or --plan.")
+            self.problem = Text(
+                "{earlier} was made with other settings ({settings}). Use the same options, or "
+                "start again without --resume or --plan.", earlier=label,
+                settings=', '.join(changed))
             self.logger.error(self.problem)
             return False
 
@@ -976,10 +983,19 @@ class MainProcessor:
             current[self._id_of(path)] = size
         previous_sizes = {i: r['size'] for i, r in rows.items()}
         if current != previous_sizes:
-            self.problem = (f"The export changed since {label.lower()} was made "
-                            f"({len(set(current) ^ set(previous_sizes))} files differ). "
-                            + ("Make a new plan." if self.plan_file
-                               else "Run again without --resume."))
+            differ = len(set(current) ^ set(previous_sizes))
+            if self.plan_file:
+                self.problem = Text(
+                    "The export changed since the plan was made ({count} file differs). "
+                    "Make a new plan.",
+                    "The export changed since the plan was made ({count} files differ). "
+                    "Make a new plan.", count=differ)
+            else:
+                self.problem = Text(
+                    "The export changed since the stopped run was made ({count} file differs). "
+                    "Run again without --resume.",
+                    "The export changed since the stopped run was made ({count} files "
+                    "differ). Run again without --resume.", count=differ)
             self.logger.error(self.problem)
             return False
 

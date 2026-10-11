@@ -14,6 +14,8 @@ from typing import Optional, Tuple
 
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
+from .i18n import Text
+
 # GPS position to time zone needs the optional extra:
 # `pip install takeout-organizer[timezones]` (tzfpy, plus tzdata on Windows).
 try:
@@ -51,16 +53,15 @@ def parse_timezone(value: str) -> tzinfo:
         sign, hours, minutes = match.groups()
         delta = timedelta(hours=int(hours), minutes=int(minutes or 0))
         if delta.total_seconds() > MAX_ZONE_OFFSET_SECONDS:
-            raise ValueError(f"Time zone offset out of range: {value}")
+            raise ValueError(Text("Time zone offset out of range: {zone}", zone=value))
         return timezone(-delta if sign == '-' else delta)
     try:
         return ZoneInfo(text)
     except (ZoneInfoNotFoundError, ValueError):
         pass
-    raise ValueError(
-        f"Unknown time zone: {value}. Use an offset such as +09:00, or a name such "
-        "as Asia/Tokyo (names need: pip install tzdata on Windows)."
-    )
+    raise ValueError(Text(
+        "Unknown time zone: {zone}. Use an offset such as +09:00, or a name such as Asia/Tokyo "
+        "(names need: pip install tzdata on Windows).", zone=value))
 
 
 def zone_for_location(latitude: float, longitude: float) -> Optional[tzinfo]:

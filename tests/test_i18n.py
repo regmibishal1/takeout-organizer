@@ -198,3 +198,35 @@ def test_the_source_text_stays_ascii():
         assert text.isascii(), path.name
     assert re.search(r"[^\x00-\x7f]", (LOCALE / "messages.pot").read_text("utf-8")) is None
     assert os.path.isfile(LOCALE / "messages.pot")
+
+
+def test_messages_stay_english_and_the_window_translates_them():
+    from takeout_organizer.i18n import Text, tr
+    zip_name = Text("{zip} is damaged (it may not have finished downloading). Download it "
+                    "again; your other files are fine.", zip="takeout-002.zip")
+    assert zip_name.startswith("takeout-002.zip is damaged") and isinstance(zip_name, str)
+    fat = ("This drive is FAT32 and cannot hold files over 4 GB. {count} of the files is larger "
+           "and will fail to copy. Use a drive formatted as exFAT or NTFS.",
+           "This drive is FAT32 and cannot hold files over 4 GB. {count} of the files are "
+           "larger and will fail to copy. Use a drive formatted as exFAT or NTFS.")
+    one, many = Text(*fat, count=1), Text(*fat, count=1234)
+    assert "1 of the files is larger" in one and "1,234 of the files are larger" in many
+    nested = Text("{earlier} was made with other settings ({settings}). Use the same options, "
+                  "or start again without --resume or --plan.", earlier=Text("The plan"),
+                  settings="layout")
+    assert nested.startswith("The plan was made with other settings (layout).")
+    assert tr("plain text") == "plain text" and tr(one) == str(one)   # English is active
+    i18n.activate("de")
+    assert tr(zip_name).startswith("takeout-002.zip ist besch\u00e4digt")
+    assert "1.234 der Dateien sind gr\u00f6\u00dfer" in tr(many)
+    assert tr(nested).startswith("Der Plan wurde mit anderen Einstellungen erstellt (layout).")
+
+
+def test_a_folder_problem_shows_in_the_window_language(tmp_path):
+    from takeout_organizer.gui_support import check_dest
+    (tmp_path / "Takeout").mkdir()
+    i18n.activate("fr")
+    check = check_dest(str(tmp_path / "Takeout"), str(tmp_path / "Takeout" / "out"))
+    assert not check.ok
+    assert check.message == ("La destination est dans le dossier Takeout. Choisissez un autre "
+                             "dossier.")

@@ -92,6 +92,49 @@ def mnemonic(text: str) -> Tuple[str, int]:
     return ''.join(shown), underline
 
 
+class Text(str):
+    """A message in English that keeps its template and values, so the window
+    can show it in its language (tr) while the command line, the log and the
+    tests see the plain English. With plural, params['count'] chooses the
+    form. Whole numbers among the values get thousands separators; a value
+    that is itself a Text is shown in the same language."""
+
+    template: str
+    plural: Optional[str]
+    params: Dict[str, object]
+
+    def __new__(cls, template: str, plural: Optional[str] = None, /, **params) -> 'Text':
+        self = super().__new__(cls, _render(template, plural, params, english=True))
+        self.template, self.plural, self.params = template, plural, params
+        return self
+
+
+def tr(text) -> str:
+    """The message in the active language: a Text is translated, anything
+    else is shown as it is."""
+    if isinstance(text, Text):
+        return _render(text.template, text.plural, text.params, english=False)
+    return str(text)
+
+
+def _render(template: str, plural: Optional[str], params: Dict[str, object],
+            english: bool) -> str:
+    if plural is None:
+        pattern = template if english else _(template)
+    else:
+        count = int(params['count'])
+        pattern = (template if count == 1 else plural) if english \
+            else ngettext(template, plural, count)
+
+    def value(v):
+        if isinstance(v, Text):
+            return str(v) if english else tr(v)
+        if isinstance(v, int) and not isinstance(v, bool):
+            return f"{v:,}" if english else number(v)
+        return v
+    return pattern.format(**{name: value(v) for name, v in params.items()})
+
+
 def active() -> str:
     return _active
 

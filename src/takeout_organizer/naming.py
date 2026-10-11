@@ -13,6 +13,8 @@ import re
 import string
 from datetime import datetime
 
+from .i18n import Text
+
 FIELDS = ('date', 'name')
 DEFAULT_DATE_FORMAT = '%Y%m%d_%H%M%S'
 
@@ -25,14 +27,16 @@ def check_template(template: str) -> str:
     try:
         fields = [field for _, field, _, _ in string.Formatter().parse(template) if field is not None]
     except ValueError as exc:
-        raise ValueError(f"The name template {template!r} is not valid ({exc}).") from None
+        raise ValueError(Text("The name template {template} is not valid ({reason}).",
+                              template=repr(template), reason=str(exc))) from None
     unknown = sorted({field for field in fields if field not in FIELDS})
     if unknown:
-        raise ValueError(f"The name template uses {', '.join('{' + f + '}' for f in unknown)}; "
-                         "it can use {date}, {date:FORMAT} and {name}.")
+        raise ValueError(Text(
+            "The name template uses {fields}; it can use {{date}}, {{date:FORMAT}} and {{name}}.",
+            fields=', '.join('{' + f + '}' for f in unknown)))
     if not fields:
-        raise ValueError("The name template must use {date} or {name}, or every photo would "
-                         "get the same name.")
+        raise ValueError(Text("The name template must use {{date}} or {{name}}, or every "
+                              "photo would get the same name."))
     return template
 
 

@@ -25,7 +25,7 @@ from . import __version__, gui_a11y, i18n, places
 from .gui_support import (FieldCheck, Settings, check_dest, check_source,
                           enable_dpi_awareness, find_exiftool, high_contrast, open_path,
                           scale_factor, system_theme)
-from .i18n import N_, _, decimal, mnemonic, ngettext, number
+from .i18n import N_, _, decimal, mnemonic, ngettext, number, tr
 from .preflight import human
 
 # Text defined here is marked with N_() and translated where it is shown.
@@ -651,7 +651,8 @@ class GooglePhotosOrganizerGUI:
         """Check both folders and say what is wrong under each field."""
         source_check, warnings = check_source(self.source.get())
         if source_check.ok and warnings:
-            source_check = FieldCheck(True, source_check.message + " " + " ".join(warnings),
+            source_check = FieldCheck(True, source_check.message + " "
+                                      + " ".join(tr(w) for w in warnings),
                                       'warning')
         self._show_check(self.source_status, source_check)
         dest_check = check_dest(self.source.get(), self.dest.get())
@@ -738,7 +739,8 @@ class GooglePhotosOrganizerGUI:
         summary = processor.summary or {}
         if not summary:
             self.preview_status.configure(
-                text=processor.problem or _("The preview did not finish. The log says why."))
+                text=tr(processor.problem) if processor.problem
+                else _("The preview did not finish. The log says why."))
             return
         if summary.get('input', 0) == 0:
             self.preview_status.configure(
@@ -986,7 +988,8 @@ class GooglePhotosOrganizerGUI:
             level = 'warning'
             self.primary.configure(text=_("Resume"))
         elif not summary:
-            banner = processor.problem or _("The run did not finish. Open the log to see why.")
+            banner = tr(processor.problem) if processor.problem \
+                else _("The run did not finish. Open the log to see why.")
             level = 'problem'
         elif not summary.get('balanced', True):
             banner = _("The numbers do not add up (MISMATCH). Open the report and the log.")
@@ -1053,7 +1056,8 @@ class GooglePhotosOrganizerGUI:
         from . import undo
         plan, reason = undo.plan(self.dest.get(), self.processor.run_id)
         if plan is None or not plan.files:
-            self.done_banner.configure(text=reason or _("This run left nothing to undo."))
+            self.done_banner.configure(
+                text=tr(reason) if reason else _("This run left nothing to undo."))
             return
         count = len(plan.files)
         question = ngettext("Delete {count} file ({size}) written by this run? Your Takeout "
@@ -1132,7 +1136,7 @@ class GooglePhotosOrganizerGUI:
                     log_callback=lambda m, level: messages.put(('log', (m, level))),
                     **options)
             except SetupError as exc:
-                messages.put(('setup_error', str(exc)))
+                messages.put(('setup_error', exc.messages))   # shown in the window's language
                 return
             processor.run()
             messages.put(('preview_done' if dry_run else 'run_done', processor))
@@ -1157,7 +1161,7 @@ class GooglePhotosOrganizerGUI:
                     self.primary.state(["!disabled"])
                     self.show_step(1)
                     self.source_status.configure(text=_("Problem: {message}").format(
-                        message=data))
+                        message="\n".join(tr(m) for m in data)))
                     self._set_status(self.source_status, 'problem')
         except queue.Empty:
             pass
@@ -1193,7 +1197,8 @@ class GooglePhotosOrganizerGUI:
         except ValueError as exc:
             self._toggle_advanced(show=True)   # the field lives in the options panel
             self.root.update_idletasks()
-            self.rename_status.configure(text=_("Problem: {message}").format(message=exc))
+            self.rename_status.configure(text=_("Problem: {message}").format(
+                message=tr(exc.args[0]) if exc.args else str(exc)))
             self._set_status(self.rename_status, 'problem')
             self.rename_entry.focus_set()
             return False

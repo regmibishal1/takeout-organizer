@@ -520,3 +520,16 @@ def test_high_contrast_keeps_the_system_colors(tk_root, tmp_path, monkeypatch):
         assert str(window.done_summary.cget("background")) == "#ffffff"
     finally:
         _close_own_window(tk_root)
+
+
+def test_a_setup_problem_shows_in_the_window_language(app):
+    from takeout_organizer import i18n
+    from takeout_organizer.i18n import Text
+    app.language.set("Deutsch")
+    app._change_language()
+    problem = Text("Unknown time zone: {zone}. Use an offset such as +09:00, or a name such as "
+                   "Asia/Tokyo (names need: pip install tzdata on Windows).", zone="Mars/Olympus")
+    app.messages.put(("setup_error", (problem,)))
+    app._poll()
+    assert i18n.active() == "de"
+    assert app.source_status.cget("text").startswith("Problem: Unbekannte Zeitzone: Mars/Olympus.")

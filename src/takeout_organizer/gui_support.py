@@ -13,7 +13,7 @@ import sys
 from dataclasses import asdict, dataclass, field
 from typing import List, Optional, Tuple
 
-from .i18n import _, ngettext, number
+from .i18n import _, ngettext, number, tr
 from .main_processor import SetupError, check_folders
 from .metadata_handler import MetadataHandler
 from .preflight import check as preflight_check, human
@@ -188,13 +188,13 @@ def check_dest(source: str, dest: str) -> FieldCheck:
         try:
             check_folders(source, dest)
         except SetupError as exc:
-            return FieldCheck(False, str(exc), 'problem')
+            return FieldCheck(False, "\n".join(tr(m) for m in exc.messages), 'problem')
     result = preflight_check(source, dest, dest, dry_run=False) if os.path.isdir(source) \
         else None
     free = _("{size} free.").format(size=human(result.dest_free)) \
         if result and result.dest_free is not None else ''
     if result and result.problems:
-        return FieldCheck(False, result.problems[0], 'problem')
+        return FieldCheck(False, tr(result.problems[0]), 'problem')
     if os.path.isdir(dest) and any(os.scandir(dest)):
         return FieldCheck(True, _("This folder already has photos. New photos will be added; "
                                   "nothing is overwritten.") + (f" {free}" if free else ''),

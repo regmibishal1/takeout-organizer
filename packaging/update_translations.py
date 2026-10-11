@@ -5,7 +5,7 @@ Run it after changing text in the window:
 
     python packaging/update_translations.py
 
-Text is collected from _(), N_() and ngettext() calls with literal strings, in
+Text is collected from _(), N_(), ngettext() and Text() calls with literal strings, in
 the order it appears in the source. A .po keeps its translations; new text is
 added untranslated (it shows in English until translated) and text no longer
 used is dropped. tests/test_i18n.py fails when a catalog is out of date.
@@ -21,7 +21,8 @@ from typing import Dict, List, Optional, Tuple
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 PACKAGE = os.path.join(ROOT, 'src', 'takeout_organizer')
 LOCALE = os.path.join(PACKAGE, 'locale')
-SOURCES = ('gui.py', 'gui_support.py', 'gui_a11y.py', 'main_processor.py')
+SOURCES = ('gui.py', 'gui_support.py', 'gui_a11y.py', 'main_processor.py', 'preflight.py',
+           'dates.py', 'naming.py', 'undo.py', 'metadata_handler.py')
 
 sys.path.insert(0, os.path.join(ROOT, 'src'))
 from takeout_organizer.i18n import parse_po  # noqa: E402
@@ -36,12 +37,14 @@ def collect() -> List[Tuple[Message, List[str]]]:
         with open(os.path.join(PACKAGE, name), encoding='utf-8') as f:
             tree = ast.parse(f.read(), name)
         calls = [node for node in ast.walk(tree) if isinstance(node, ast.Call)
-                 and isinstance(node.func, ast.Name) and node.func.id in ('_', 'N_', 'ngettext')]
+                 and isinstance(node.func, ast.Name)
+                 and node.func.id in ('_', 'N_', 'ngettext', 'Text')]
         for node in sorted(calls, key=lambda n: (n.lineno, n.col_offset)):
             args = node.args
             if not args or not _literal(args[0]):
                 continue
-            if node.func.id == 'ngettext':
+            if node.func.id == 'ngettext' or (node.func.id == 'Text' and len(args) > 1):
+                # Text(singular, plural, count=...) is a plural message too.
                 if len(args) < 2 or not _literal(args[1]):
                     continue
                 key: Message = (args[0].value, args[1].value)

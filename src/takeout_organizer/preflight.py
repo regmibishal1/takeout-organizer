@@ -14,6 +14,7 @@ import zipfile
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
+from .i18n import Text
 from .runguard import STATE_DIR
 
 # Required free space on top of the estimate.
@@ -126,25 +127,22 @@ def _zip_sizes(zip_paths: List[str], result: PreflightResult) -> Dict[str, List[
                 members = [info.file_size for info in zf.infolist() if not info.is_dir()]
             packed = os.path.getsize(path)
         except (zipfile.BadZipFile, OSError):
-            result.warnings.append(
-                f"{name} is damaged (it may not have finished downloading). "
-                "Download it again; your other files are fine."
-            )
+            result.warnings.append(Text(
+                "{zip} is damaged (it may not have finished downloading). Download it again; "
+                "your other files are fine.", zip=name))
             continue
         expanded = sum(members)
         if len(members) > MAX_ENTRIES:
-            result.problems.append(
-                f"{name} holds {len(members):,} files, more than a Takeout part ever does. "
-                "It is probably damaged or not from Google Takeout. Move it out of the "
-                "folder and run again."
-            )
+            result.problems.append(Text(
+                "{zip} holds {count} files, more than a Takeout part ever does. It is probably "
+                "damaged or not from Google Takeout. Move it out of the folder and run again.",
+                zip=name, count=len(members)))
         elif expanded > EXPANSION_FLOOR and expanded > MAX_EXPANSION * packed:
-            result.problems.append(
-                f"{name} would expand from {human(packed)} to {human(expanded)}, more than "
-                f"{MAX_EXPANSION} times its size; Takeout parts barely compress. It is "
-                "probably damaged or not from Google Takeout. Move it out of the folder and "
-                "run again."
-            )
+            result.problems.append(Text(
+                "{zip} would expand from {packed} to {expanded}, more than {times} times its "
+                "size; Takeout parts barely compress. It is probably damaged or not from "
+                "Google Takeout. Move it out of the folder and run again.",
+                zip=name, packed=human(packed), expanded=human(expanded), times=MAX_EXPANSION))
         else:
             sizes[path] = members
     return sizes
@@ -161,10 +159,10 @@ def _missing_parts(zip_paths: List[str]) -> List[str]:
         highest = max(parts)
         for part in range(1, highest + 1):
             if part not in parts:
-                messages.append(
-                    f"Part {part:03d} of {highest:03d} is missing. Download it into the same "
-                    "folder, or the photos in it will not be organized."
-                )
+                messages.append(Text(
+                    "Part {part} of {last} is missing. Download it into the same folder, or "
+                    "the photos in it will not be organized.",
+                    part=f"{part:03d}", last=f"{highest:03d}"))
     return messages
 
 
@@ -240,38 +238,43 @@ def check(source: str, dest: str, work_dir: str, dry_run: bool,
         # On one drive, finished files are moved out of the working copy into
         # place, so the run needs room for the larger of the two, not both.
         if max(work_need, dest_need) > work_free:
-            message = (
-                f"Not enough space on {_existing_ancestor(dest)}: the run needs about "
-                f"{human(int(max(work_need, dest_need)))}, {human(work_free)} is free. Free some "
-                "space, or use --work-dir on another drive."
-            )
+            values = dict(drive=_existing_ancestor(dest), free=human(work_free),
+                          need=human(int(max(work_need, dest_need))))
             if dest_has_files and work_need <= work_free:
                 # A rerun skips files already there, so it may need far less.
-                result.warnings.append(message + " (It may fit if most files are already there.)")
+                result.warnings.append(Text(
+                    "Not enough space on {drive}: the run needs about {need}, {free} is free. "
+                    "Free some space, or use --work-dir on another drive. (It may fit if most "
+                    "files are already there.)", **values))
             else:
-                result.problems.append(message)
+                result.problems.append(Text(
+                    "Not enough space on {drive}: the run needs about {need}, {free} is free. "
+                    "Free some space, or use --work-dir on another drive.", **values))
     else:
         if work_free is not None and work_need > work_free:
-            result.problems.append(
-                f"Not enough space for the working copy on {_existing_ancestor(work_dir)}: "
-                f"needs about {human(int(work_need))}, {human(work_free)} is free. "
-                "Use --work-dir on a larger drive."
-            )
+            result.problems.append(Text(
+                "Not enough space for the working copy on {drive}: needs about {need}, {free} "
+                "is free. Use --work-dir on a larger drive.", drive=_existing_ancestor(work_dir),
+                need=human(int(work_need)), free=human(work_free)))
         if dest_free is not None and dest_need > dest_free:
-            message = (
-                f"Not enough space on {_existing_ancestor(dest)} for the organized photos: "
-                f"needs about {human(int(dest_need))}, {human(dest_free)} is free."
-            )
+            values = dict(drive=_existing_ancestor(dest), need=human(int(dest_need)),
+                          free=human(dest_free))
             if dest_has_files:
-                result.warnings.append(message + " (It may fit if most files are already there.)")
+                result.warnings.append(Text(
+                    "Not enough space on {drive} for the organized photos: needs about {need}, "
+                    "{free} is free. (It may fit if most files are already there.)", **values))
             else:
-                result.problems.append(message)
+                result.problems.append(Text(
+                    "Not enough space on {drive} for the organized photos: needs about {need}, "
+                    "{free} is free.", **values))
 
     if not dry_run and (filesystem_name(dest) or '').upper() in ('FAT32', 'FAT'):
         too_big = sum(1 for size in file_sizes if size > FAT32_MAX_FILE)
         if too_big:
-            result.warnings.append(
-                f"This drive is FAT32 and cannot hold files over 4 GB. {too_big} of the files "
-                "are larger and will fail to copy. Use a drive formatted as exFAT or NTFS."
-            )
+            result.warnings.append(Text(
+                "This drive is FAT32 and cannot hold files over 4 GB. {count} of the files is "
+                "larger and will fail to copy. Use a drive formatted as exFAT or NTFS.",
+                "This drive is FAT32 and cannot hold files over 4 GB. {count} of the files are "
+                "larger and will fail to copy. Use a drive formatted as exFAT or NTFS.",
+                count=too_big))
     return result
