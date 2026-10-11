@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.10.0.schema.json
+PackageIdentifier: regmibishal1.TakeoutOrganizer
+PackageVersion: 0.1.0
+InstallerType: zip
+NestedInstallerType: portable
+NestedInstallerFiles:
+- RelativeFilePath: Takeout Organizer\takeout-organizer.exe
+  PortableCommandAlias: takeout-organizer
+- RelativeFilePath: Takeout Organizer\Takeout Organizer.exe
+  PortableCommandAlias: takeout-organizer-window
+ReleaseDate: 2026-10-10
+Installers:
+- Architecture: x64
+  InstallerUrl: https://github.com/regmibishal1/takeout-organizer/releases/download/v0.1.0/Takeout-Organizer-0.1.0-windows-x64.zip
+  InstallerSha256: A6ED600A6790375E34DC744FDAC5D214EC0BD8BD68FE5493CEAF21ECA538B4A0
+ManifestType: installer
+ManifestVersion: 1.10.0

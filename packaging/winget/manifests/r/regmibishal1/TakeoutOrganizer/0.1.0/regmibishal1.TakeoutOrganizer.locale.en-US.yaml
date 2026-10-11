@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.10.0.schema.json
+PackageIdentifier: regmibishal1.TakeoutOrganizer
+PackageVersion: 0.1.0
+PackageLocale: en-US
+Publisher: Bishal Regmi
+PublisherUrl: https://github.com/regmibishal1
+PublisherSupportUrl: https://github.com/regmibishal1/takeout-organizer/issues
+PackageName: Takeout Organizer
+PackageUrl: https://github.com/regmibishal1/takeout-organizer
+License: MIT
+LicenseUrl: https://github.com/regmibishal1/takeout-organizer/blob/main/LICENSE
+ShortDescription: Fix the dates and locations in your Google Photos Takeout. Free, offline, and your original files are never changed.
+Description: Takeout Organizer puts the dates, places and captions from a Google Photos Takeout back into the photos themselves with ExifTool (included), and files them in folders by date. It previews every change first, accounts for every file, finds duplicates, and can undo a run.
+Moniker: takeout-organizer
+Tags:
+- google-photos
+- takeout
+- exif
+- exiftool
+- metadata
+- photo-organizer
+ReleaseNotesUrl: https://github.com/regmibishal1/takeout-organizer/releases/tag/v0.1.0
+ManifestType: defaultLocale
+ManifestVersion: 1.10.0

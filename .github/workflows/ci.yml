@@ -74,3 +74,26 @@ jobs:
         env:
           TZ: Asia/Tokyo
         run: pytest
+
+  # The files for package managers (packaging/make_store_files.py): Homebrew's
+  # own checks for the cask. The winget manifests are checked with
+  # `winget validate` when they are made.
+  store-files:
+    name: Homebrew cask
+    runs-on: macos-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Audit the cask
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+          HOMEBREW_NO_INSTALL_CLEANUP: "1"
+        run: |
+          brew tap-new --no-git local/check
+          casks="$(brew --repository)/Library/Taps/local/homebrew-check/Casks"
+          mkdir -p "$casks"
+          cp packaging/homebrew/Casks/takeout-organizer.rb "$casks/"
+          brew style --cask local/check/takeout-organizer
+          brew audit --cask --strict local/check/takeout-organizer

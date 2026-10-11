@@ -98,3 +98,38 @@ def test_screen_scale_and_contrast_checks_are_safe_anywhere():
     else:
         assert scale_factor(Root(96)) == 1.0 and scale_factor(Root(100)) == 1.0
         assert scale_factor(Root(144)) == 1.5 and scale_factor(Root(72)) == 1.0
+
+
+def test_every_workflow_action_is_pinned_to_a_commit():
+    import re
+    for workflow in (ROOT / ".github" / "workflows").glob("*.yml"):
+        for line in workflow.read_text(encoding="utf-8").splitlines():
+            if "uses:" in line:
+                assert re.search(r"uses: [\w.-]+/[\w.-]+@[0-9a-f]{40}\b", line), \
+                    (workflow.name, line)
+
+
+def test_pypi_publishing_waits_to_be_switched_on_and_checks_the_version():
+    workflow = (ROOT / ".github" / "workflows" / "publish-pypi.yml").read_text(encoding="utf-8")
+    assert "if: vars.PUBLISH_TO_PYPI == 'true'" in workflow
+    assert 'if [ "v$version" != "$TAG" ]' in workflow and "twine check --strict" in workflow
+    # Only the publishing job may ask PyPI for a token.
+    assert workflow.count("id-token: write") == 1
+    assert workflow.index("id-token: write") > workflow.index("  publish:")
+
+
+def test_store_files_point_at_the_release_assets():
+    sys.path.insert(0, str(ROOT / "packaging"))
+    import make_store_files as store
+    files = store.winget("9.8.7", "ab" * 32, "2026-01-02")
+    installer = files["regmibishal1.TakeoutOrganizer.installer.yaml"]
+    assert ("InstallerUrl: https://github.com/regmibishal1/takeout-organizer/releases/download/"
+            "v9.8.7/Takeout-Organizer-9.8.7-windows-x64.zip") in installer
+    assert "InstallerSha256: " + "AB" * 32 in installer
+    assert "PortableCommandAlias: takeout-organizer\n" in installer
+    cask = store.cask("9.8.7", "CD" * 32)
+    assert 'version "9.8.7"' in cask and 'sha256 "' + "cd" * 32 + '"' in cask
+    assert "Takeout-Organizer-#{version}-macos-arm64.zip" in cask
+    # The cask installs the app the release workflow builds.
+    spec = (ROOT / "packaging" / "takeout-organizer.spec").read_text(encoding="utf-8")
+    assert "name='Takeout Organizer.app'" in spec and 'app "Takeout Organizer.app"' in cask

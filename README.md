@@ -26,7 +26,7 @@ account of every file. It:
   Sidecars are matched by exact rules only, never by a similar name, and a weak match must
   be confirmed by the sidecar's `title`. Each sidecar is used by one photo (edited copies
   and Live Photo videos share). The rules are listed with a test for each case in
-  [tests/fixtures/takeout_names.csv](tests/fixtures/takeout_names.csv)
+  [tests/fixtures/takeout_names.csv](https://github.com/regmibishal1/takeout-organizer/blob/main/tests/fixtures/takeout_names.csv)
 - **De-duplicates by content, not just bytes**: a perceptual hash catches the same photo
   even when it was re-compressed (e.g. a Takeout copy and a downloaded shared-album copy),
   and keeps the best version (the one with a sidecar, then higher resolution)
@@ -361,7 +361,7 @@ English on purpose, so a bug report reads the same for everyone.
 
 The German, French and Spanish texts have not been reviewed by native speakers yet.
 Corrections are welcome: the texts are in
-[`src/takeout_organizer/locale`](src/takeout_organizer/locale), one standard gettext `.po`
+[`src/takeout_organizer/locale`](https://github.com/regmibishal1/takeout-organizer/tree/main/src/takeout_organizer/locale), one standard gettext `.po`
 file per language, which any text editor or [Poedit](https://poedit.net/) can open. To add a
 language, copy `messages.pot` to `<code>.po` (for example `it.po`), fill in each `msgstr`,
 and set the `X-Language-Name` header to the language's own name. Keep the `{placeholders}`
@@ -393,7 +393,7 @@ before you share them, for example in a bug report.
 
 The tool is designed so a failed or interrupted run can never cost you data. Sources are
 read-only, existing files are never overwritten, and `--dry-run` shows exactly what will
-happen first. See [SAFETY.md](SAFETY.md) for the full guarantees.
+happen first. See [SAFETY.md](https://github.com/regmibishal1/takeout-organizer/blob/main/SAFETY.md) for the full guarantees.
 
 ## Development
 
@@ -407,8 +407,10 @@ The window tests are skipped unless `TAKEOUT_GUI_TESTS=1` is set, so a plain `py
 opens windows on your desktop. CI runs them. On Linux they can run under a virtual display
 without touching yours: `TAKEOUT_GUI_TESTS=1 xvfb-run -a pytest`.
 
+Releases, PyPI, winget and Homebrew: see [RELEASING.md](https://github.com/regmibishal1/takeout-organizer/blob/main/RELEASING.md).
+
 ## License
 
-MIT, see [LICENSE](LICENSE). The standalone apps also include ExifTool, Python, Tcl/Tk and
-the libraries listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), each under its own
+MIT, see [LICENSE](https://github.com/regmibishal1/takeout-organizer/blob/main/LICENSE). The standalone apps also include ExifTool, Python, Tcl/Tk and
+the libraries listed in [THIRD_PARTY_NOTICES.md](https://github.com/regmibishal1/takeout-organizer/blob/main/THIRD_PARTY_NOTICES.md), each under its own
 license.
