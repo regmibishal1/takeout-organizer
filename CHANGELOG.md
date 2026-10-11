@@ -5,6 +5,17 @@ All notable changes are listed here. The format follows
 [Semantic Versioning](https://semver.org/). Changes to how sidecars are matched are always
 listed, since they change which date a photo gets.
 
+## [Unreleased]
+
+### Fixed
+
+- The window at 125 % or 150 % display scaling: spacing, text widths, table columns and the
+  window size now grow with the text, the text in buttons, fields and choices is no longer
+  left small beside larger labels, and the window always fits on the screen, also when the
+  size remembered from a larger screen does not.
+- With Windows High Contrast on, the window keeps the system's colors instead of its own
+  light or dark theme, and the theme button is hidden.
+
 ## [0.1.0] - 2026-10-10
 
 First public release. Takeout Organizer puts the dates, places and captions from a Google

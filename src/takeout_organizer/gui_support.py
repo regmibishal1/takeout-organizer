@@ -78,6 +78,43 @@ class Settings:
             pass  # remembering settings must never stop the app
 
 
+def scale_factor(root) -> float:
+    """How much larger than at 96 DPI the window's pixel sizes should be.
+    Tk already scales fonts by the screen's DPI (125 % or 150 % on Windows);
+    paddings, wrap widths and window sizes given in pixels are multiplied by
+    this so they grow with the text. macOS reports 72 and scales the whole
+    window itself, and a factor this close to 1 is not worth a change."""
+    if sys.platform == 'darwin':
+        return 1.0
+    try:
+        factor = root.winfo_fpixels('1i') / 96
+    except Exception:
+        return 1.0
+    return factor if factor >= 1.15 else 1.0
+
+
+def high_contrast() -> bool:
+    """Windows High Contrast is on: the window then keeps the system's colors
+    instead of its own theme."""
+    if os.name != 'nt':
+        return False
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        class HighContrast(ctypes.Structure):
+            _fields_ = [('cbSize', wintypes.UINT), ('dwFlags', wintypes.DWORD),
+                        ('lpszDefaultScheme', wintypes.LPWSTR)]
+        info = HighContrast(ctypes.sizeof(HighContrast), 0, None)
+        spi_gethighcontrast = 0x42
+        if not ctypes.windll.user32.SystemParametersInfoW(
+                spi_gethighcontrast, ctypes.sizeof(info), ctypes.byref(info), 0):
+            return False
+        return bool(info.dwFlags & 1)   # HCF_HIGHCONTRASTON
+    except Exception:
+        return False
+
+
 def system_theme() -> str:
     """'dark' when the operating system is set to dark mode, else 'light'."""
     try:

@@ -456,3 +456,67 @@ def test_without_a_heic_decoder_the_copies_option_is_off_and_disabled(tk_root, t
             child.destroy()
         gc.collect()
         gc.enable()
+
+
+def _own_window(tk_root, tmp_path):
+    from takeout_organizer.gui import GooglePhotosOrganizerGUI
+    return GooglePhotosOrganizerGUI(tk_root, settings_path=str(tmp_path / "settings.json"))
+
+
+def _close_own_window(tk_root):
+    import gc
+    _clear(tk_root)
+    gc.collect()
+    gc.enable()
+
+
+def test_pixel_sizes_grow_with_the_screen_scale(tk_root, tmp_path, monkeypatch):
+    import gc
+    from takeout_organizer import gui
+    monkeypatch.setattr(gui, "scale_factor", lambda root: 1.5)
+    gc.disable()
+    try:
+        window = _own_window(tk_root, tmp_path)
+        assert gui.PAD == 36 and gui.GAP == 12 and gui.px(4) == 6
+        assert int(str(window.preview_status.cget("wraplength"))) == 1290
+        width, height = tk_root.minsize()
+        screen_w, screen_h = tk_root.winfo_screenwidth(), tk_root.winfo_screenheight()
+        # 720 x 560 at 150 %, but never more than the screen holds.
+        assert width == min(1080, screen_w - 60) and height == min(840, screen_h - 120)
+    finally:
+        _close_own_window(tk_root)
+
+
+def test_a_remembered_size_too_big_for_the_screen_is_not_used(tk_root, tmp_path):
+    import gc
+    (tmp_path / "settings.json").write_text('{"geometry": "9000x9000+0+0"}', encoding="utf-8")
+    gc.disable()
+    try:
+        _own_window(tk_root, tmp_path)
+        tk_root.update_idletasks()
+        assert tk_root.winfo_width() <= tk_root.winfo_screenwidth()
+        assert tk_root.winfo_height() <= tk_root.winfo_screenheight()
+    finally:
+        _close_own_window(tk_root)
+
+
+def test_high_contrast_keeps_the_system_colors(tk_root, tmp_path, monkeypatch):
+    import gc
+    from takeout_organizer import gui
+    monkeypatch.setattr(gui, "high_contrast", lambda: True)
+    # Windows names its contrast colors; Tk elsewhere does not know them.
+    monkeypatch.setattr(gui, "CONTRAST_COLORS",
+                        {"text": "#000000", "background": "#ffffff", "bar": "#0000ff"})
+    (tmp_path / "settings.json").write_text('{"theme": "dark"}', encoding="utf-8")
+    gc.disable()
+    try:
+        window = _own_window(tk_root, tmp_path)
+        assert window.theme == "contrast"
+        assert window.theme_button.grid_info() == {}          # no theme switch
+        window._toggle_theme()
+        assert window.settings.theme == "dark" and window.theme == "contrast"
+        window._set_status(window.source_status, "problem")
+        assert str(window.source_status.cget("foreground")) == "#000000"
+        assert str(window.done_summary.cget("background")) == "#ffffff"
+    finally:
+        _close_own_window(tk_root)

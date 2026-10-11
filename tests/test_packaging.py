@@ -81,3 +81,20 @@ def test_the_window_app_survives_having_no_console():
     # replaced before the tool is imported (its CLI keeps a reference to stderr).
     text = (ROOT / "packaging" / "gui_main.py").read_text(encoding="utf-8")
     assert text.index("open(os.devnull") < text.index("from takeout_organizer")
+
+
+def test_screen_scale_and_contrast_checks_are_safe_anywhere():
+    from takeout_organizer.gui_support import high_contrast, scale_factor
+
+    class Root:
+        def __init__(self, dpi):
+            self.dpi = dpi
+
+        def winfo_fpixels(self, distance):
+            return self.dpi
+    assert isinstance(high_contrast(), bool)
+    if sys.platform == "darwin":
+        assert scale_factor(Root(72)) == 1.0
+    else:
+        assert scale_factor(Root(96)) == 1.0 and scale_factor(Root(100)) == 1.0
+        assert scale_factor(Root(144)) == 1.5 and scale_factor(Root(72)) == 1.0

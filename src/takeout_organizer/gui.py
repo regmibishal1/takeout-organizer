@@ -10,6 +10,7 @@ Theme: Sun Valley (sv-ttk), light or dark, following the system by default.
 """
 
 import queue
+import re
 import threading
 import time
 import tkinter as tk
@@ -22,7 +23,8 @@ import sv_ttk
 
 from . import __version__, gui_a11y, i18n, places
 from .gui_support import (FieldCheck, Settings, check_dest, check_source,
-                          enable_dpi_awareness, find_exiftool, open_path, system_theme)
+                          enable_dpi_awareness, find_exiftool, high_contrast, open_path,
+                          scale_factor, system_theme)
 from .i18n import N_, _, decimal, mnemonic, ngettext, number
 from .preflight import human
 
@@ -86,8 +88,46 @@ def _duration(seconds: float) -> str:
     return _("{count} hours").format(count=decimal(seconds / 3600))
 
 
+# Sizes in pixels are given as at 96 DPI and grow with the screen's scale
+# (125 %, 150 % on Windows) through px(), as the text does; set per window.
+_scale = 1.0
 PAD = 24   # window padding
 GAP = 8    # between related controls
+
+
+def px(n: float) -> int:
+    """n pixels at 96 DPI, at this screen's scale."""
+    return round(n * _scale)
+
+
+def _use_scale(factor: float) -> None:
+    global _scale, PAD, GAP
+    _scale = factor
+    PAD, GAP = px(24), px(8)
+
+
+_THEME_FONTS: Dict[str, int] = {}   # sv-ttk font -> its size in pixels at 96 DPI
+
+
+def _scale_theme_fonts(root) -> None:
+    """sv-ttk sizes its fonts in pixels, which Tk does not grow with the
+    screen as it does sizes in points: at 150 % buttons and fields kept small
+    text beside larger labels. They are scaled from their own sizes, so this
+    can run again."""
+    for name in root.tk.splitlist(root.tk.call('font', 'names')):
+        if not name.startswith('SunValley'):
+            continue
+        font = tkfont.Font(root=root, name=name, exists=True)
+        size = int(font.cget('size'))
+        if size < 0:
+            font.configure(size=-px(_THEME_FONTS.setdefault(name, -size)))
+
+
+# Windows High Contrast: the user's own colors, by their Windows names (only
+# Tk on Windows knows them). The words already say each status; color adds
+# nothing the user did not choose.
+CONTRAST_COLORS = {'text': 'SystemWindowText', 'background': 'SystemWindow',
+                   'bar': 'SystemHighlight'}
 
 # Monospace fonts for the summary table, first available wins.
 MONO_FONTS = ("Cascadia Mono", "Consolas", "Menlo", "SF Mono", "DejaVu Sans Mono")
@@ -150,12 +190,19 @@ class GooglePhotosOrganizerGUI:
         self.root = root
         self.settings = Settings.load(settings_path)
         i18n.activate(self.settings.language)
-        self.theme = system_theme() if self.settings.theme == 'system' else self.settings.theme
-        sv_ttk.set_theme(self.theme, root)
+        _use_scale(scale_factor(root))
+        # High Contrast keeps the system's colors: Sun Valley's would replace them.
+        self.contrast = high_contrast()
+        if self.contrast:
+            self.theme = 'contrast'
+        else:
+            self.theme = system_theme() if self.settings.theme == 'system' \
+                else self.settings.theme
+            sv_ttk.set_theme(self.theme, root)
+            _scale_theme_fonts(root)
 
         self.root.title("Takeout Organizer")
-        self.root.minsize(720, 560)
-        self.root.geometry(self.settings.geometry or self._centered(960, 680))
+        self._size_window()
         self.root.protocol("WM_DELETE_WINDOW", self._close)
 
         self.messages: "queue.Queue" = queue.Queue()
@@ -202,6 +249,19 @@ class GooglePhotosOrganizerGUI:
         self.font_mono = tkfont.Font(family=mono, size=size) if mono \
             else tkfont.nametofont("TkFixedFont")
 
+    def _size_window(self) -> None:
+        """Minimum and first size, scaled and kept within the screen (with room
+        for the taskbar): a laptop at 150 % has little of it. A remembered
+        size is kept unless it no longer fits, say on a smaller screen."""
+        screen_w, screen_h = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
+        most_w, most_h = screen_w - px(40), screen_h - px(80)
+        self.root.minsize(min(px(720), most_w), min(px(560), most_h))
+        saved = re.match(r'(\d+)x(\d+)', self.settings.geometry or '')
+        if saved and int(saved.group(1)) <= screen_w and int(saved.group(2)) <= screen_h:
+            self.root.geometry(self.settings.geometry)
+        else:
+            self.root.geometry(self._centered(min(px(960), most_w), min(px(680), most_h)))
+
     def _centered(self, width: int, height: int) -> str:
         x = max(0, (self.root.winfo_screenwidth() - width) // 2)
         y = max(0, (self.root.winfo_screenheight() - height) // 3)
@@ -211,7 +271,7 @@ class GooglePhotosOrganizerGUI:
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(2, weight=1)
 
-        header = ttk.Frame(self.root, padding=(PAD, 12))
+        header = ttk.Frame(self.root, padding=(PAD, px(12)))
         header.grid(row=0, column=0, sticky="ew")
         header.columnconfigure(0, weight=1)
         ttk.Label(header, text="Takeout Organizer", font=self.font_heading).grid(
@@ -227,10 +287,12 @@ class GooglePhotosOrganizerGUI:
             row=0, column=2, padx=(0, GAP))
         self.theme_button = ttk.Button(header, command=self._toggle_theme)
         self.theme_button.grid(row=0, column=3, padx=(0, GAP))
+        if self.contrast:
+            self.theme_button.grid_remove()   # the system's colors are in use
         self._label_theme_button()
         ttk.Label(header, text=f"v{__version__}", font=self.font_small).grid(row=0, column=4)
 
-        stepper = ttk.Frame(self.root, padding=(PAD, 4, PAD, 12))
+        stepper = ttk.Frame(self.root, padding=(PAD, px(4), PAD, px(12)))
         stepper.grid(row=1, column=0, sticky="ew")
         self.step_labels: List[ttk.Label] = []
         for index, name in enumerate(STEPS):
@@ -242,14 +304,14 @@ class GooglePhotosOrganizerGUI:
                     row=0, column=index * 2 + 1, sticky="ew", padx=GAP)
                 stepper.columnconfigure(index * 2 + 1, weight=1)
 
-        self.content = ttk.Frame(self.root, padding=(PAD, 8, PAD, 8))
+        self.content = ttk.Frame(self.root, padding=(PAD, px(8), PAD, px(8)))
         self.content.grid(row=2, column=0, sticky="nsew")
         self.content.columnconfigure(0, weight=1)
         self.content.rowconfigure(0, weight=1)
         self.frames = {1: self._build_folders(), 2: self._build_preview(),
                        3: self._build_organize(), 4: self._build_done()}
 
-        footer = ttk.Frame(self.root, padding=(PAD, 12))
+        footer = ttk.Frame(self.root, padding=(PAD, px(12)))
         footer.grid(row=3, column=0, sticky="ew")
         footer.columnconfigure(1, weight=1)
         self.back_button = self._button(footer, N_("&Back"), self._back)
@@ -366,26 +428,42 @@ class GooglePhotosOrganizerGUI:
             text=_("Dark mode") if self.theme == 'light' else _("Light mode"))
 
     def _toggle_theme(self) -> None:
+        if self.contrast:
+            return
         self.theme = 'dark' if self.theme == 'light' else 'light'
         sv_ttk.set_theme(self.theme, self.root)
+        _scale_theme_fonts(self.root)
         self.settings.theme = self.theme
         self._label_theme_button()
         for label, level in self._status_levels.items():
-            label.configure(foreground=STATUS_COLORS[self.theme][level])
+            label.configure(foreground=self._status_color(level))
         self._match_theme()
+
+    def _status_color(self, level: str) -> str:
+        if self.contrast:
+            return CONTRAST_COLORS['text']
+        return STATUS_COLORS[self.theme][level]
+
+    def _banner_color(self, level: str) -> str:
+        if self.contrast:
+            return CONTRAST_COLORS['bar']
+        return BANNER_COLORS[self.theme][level]
 
     def _match_theme(self) -> None:
         """Plain Tk widgets are not themed by sv-ttk; give them its colors."""
-        background = theme_color("background")
-        foreground = theme_color("foreground", "TLabel")
+        if self.contrast:
+            background, foreground = CONTRAST_COLORS['background'], CONTRAST_COLORS['text']
+        else:
+            background = theme_color("background")
+            foreground = theme_color("foreground", "TLabel")
         for text in (self.done_summary, self.details):
             text.configure(background=background, foreground=foreground,
                            insertbackground=foreground)
         for level in ('warning', 'error', 'critical'):
             self.details.tag_configure(
-                level, foreground=STATUS_COLORS[self.theme]['problem' if level != 'warning'
-                                                             else 'warning'])
-        self.done_bar.configure(background=BANNER_COLORS[self.theme][self._done_level])
+                level, foreground=self._status_color('problem' if level != 'warning'
+                                                     else 'warning'))
+        self.done_bar.configure(background=self._banner_color(self._done_level))
         self.folders_scroll.match_theme()
 
     def _close(self) -> None:
@@ -403,8 +481,8 @@ class GooglePhotosOrganizerGUI:
 
         ttk.Label(frame, text=_("Fix the dates and locations in your Google Photos Takeout. "
                                 "Free, offline, and your original files are never changed."),
-                  font=self.font_small, wraplength=760).grid(row=0, column=0, columnspan=2, sticky="w",
-                                             pady=(0, 16))
+                  font=self.font_small, wraplength=px(760)).grid(row=0, column=0, columnspan=2, sticky="w",
+                                             pady=(0, px(16)))
 
         self.source_entry, self.source_status = self._folder_field(
             frame, 1, _("Takeout folder"),
@@ -416,7 +494,7 @@ class GooglePhotosOrganizerGUI:
             self.dest, self._browse_dest)
 
         exiftool_row = ttk.Frame(frame)
-        exiftool_row.grid(row=7, column=0, columnspan=2, sticky="w", pady=(4, 12))
+        exiftool_row.grid(row=7, column=0, columnspan=2, sticky="w", pady=(px(4), px(12)))
         path, line = find_exiftool()
         self.exiftool_status = ttk.Label(exiftool_row, text=line, font=self.font_small)
         self.exiftool_status.grid(row=0, column=0, sticky="w")
@@ -427,22 +505,22 @@ class GooglePhotosOrganizerGUI:
                 row=0, column=1, padx=GAP)
 
         self.guide_button = ttk.Button(frame, command=self._toggle_guide)
-        self.guide_button.grid(row=8, column=0, sticky="w", pady=(4, 0))
-        self.guide = ttk.Label(frame, text=_(EXPORT_GUIDE), justify="left", wraplength=640)
-        self.guide.grid(row=9, column=0, columnspan=2, sticky="w", padx=(16, 0), pady=4)
+        self.guide_button.grid(row=8, column=0, sticky="w", pady=(px(4), 0))
+        self.guide = ttk.Label(frame, text=_(EXPORT_GUIDE), justify="left", wraplength=px(640))
+        self.guide.grid(row=9, column=0, columnspan=2, sticky="w", padx=(px(16), 0), pady=px(4))
         self._toggle_guide(show=not self.settings.seen_guide)
 
         self.advanced_button = ttk.Button(frame, command=self._toggle_advanced)
-        self.advanced_button.grid(row=10, column=0, sticky="w", pady=(8, 0))
+        self.advanced_button.grid(row=10, column=0, sticky="w", pady=(px(8), 0))
         self.advanced = self._build_advanced(frame)
-        self.advanced.grid(row=11, column=0, columnspan=2, sticky="w", padx=(16, 0), pady=4)
+        self.advanced.grid(row=11, column=0, columnspan=2, sticky="w", padx=(px(16), 0), pady=px(4))
         self._toggle_advanced(show=False)
         return self.folders_scroll
 
     def _folder_field(self, frame, row, title, help_text, variable, browse):
         ttk.Label(frame, text=title, font=self.font_label).grid(row=row, column=0, sticky="w")
         ttk.Label(frame, text=help_text, font=self.font_small).grid(
-            row=row + 1, column=0, columnspan=2, sticky="w", pady=(0, 4))
+            row=row + 1, column=0, columnspan=2, sticky="w", pady=(0, px(4)))
         line = ttk.Frame(frame)
         line.grid(row=row + 2, column=0, columnspan=2, sticky="ew")
         line.columnconfigure(0, weight=1)
@@ -454,33 +532,33 @@ class GooglePhotosOrganizerGUI:
         entry.bind("<FocusOut>", lambda event: self.validate())
         ttk.Button(line, text=_("Browse..."), width=12, command=browse).grid(
             row=0, column=1, padx=(GAP, 0))
-        status = ttk.Label(line, text="", font=self.font_small, wraplength=640, justify="left")
-        status.grid(row=1, column=0, columnspan=2, sticky="w", pady=(4, 16))
+        status = ttk.Label(line, text="", font=self.font_small, wraplength=px(640), justify="left")
+        status.grid(row=1, column=0, columnspan=2, sticky="w", pady=(px(4), px(16)))
         return entry, status
 
     def _build_advanced(self, parent) -> ttk.Frame:
         frame = ttk.Frame(parent)
-        ttk.Label(frame, text=_("Folders")).grid(row=0, column=0, sticky="w", pady=2)
+        ttk.Label(frame, text=_("Folders")).grid(row=0, column=0, sticky="w", pady=px(2))
         ttk.Combobox(frame, textvariable=self.layout, state="readonly", width=22,
                      values=[_(label) for label, _value in LAYOUT_CHOICES]).grid(
             row=0, column=1, sticky="w", padx=GAP)
-        ttk.Label(frame, text=_("Duplicates")).grid(row=1, column=0, sticky="w", pady=2)
+        ttk.Label(frame, text=_("Duplicates")).grid(row=1, column=0, sticky="w", pady=px(2))
         choices = ttk.Frame(frame)
         choices.grid(row=1, column=1, sticky="w", padx=GAP)
         for column, (label, value) in enumerate(DEDUP_CHOICES):
             ttk.Radiobutton(choices, text=_(label), value=value, variable=self.dedup).grid(
-                row=0, column=column, padx=(0, 12))
+                row=0, column=column, padx=(0, px(12)))
         ttk.Checkbutton(frame, text=_("Create album playlists"), variable=self.albums).grid(
-            row=2, column=1, sticky="w", padx=GAP, pady=2)
-        ttk.Label(frame, text=_("Time zone")).grid(row=3, column=0, sticky="w", pady=2)
+            row=2, column=1, sticky="w", padx=GAP, pady=px(2))
+        ttk.Label(frame, text=_("Time zone")).grid(row=3, column=0, sticky="w", pady=px(2))
         zone = ttk.Frame(frame)
         zone.grid(row=3, column=1, sticky="w", padx=GAP)
         ttk.Entry(zone, textvariable=self.time_zone, width=18).grid(row=0, column=0)
         ttk.Label(zone, text=_("for photos without location or camera zone; empty means "
                                "this computer's zone, for example +09:00 or Asia/Tokyo"),
-                  font=self.font_small, wraplength=420).grid(row=0, column=1, padx=GAP)
+                  font=self.font_small, wraplength=px(420)).grid(row=0, column=1, padx=GAP)
 
-        ttk.Label(frame, text=_("File names")).grid(row=4, column=0, sticky="nw", pady=2)
+        ttk.Label(frame, text=_("File names")).grid(row=4, column=0, sticky="nw", pady=px(2))
         names = ttk.Frame(frame)
         names.grid(row=4, column=1, sticky="w", padx=GAP)
         ttk.Checkbutton(names, text=_("Name files by date:"), variable=self.rename_on).grid(
@@ -489,14 +567,14 @@ class GooglePhotosOrganizerGUI:
         self.rename_entry.grid(row=0, column=1, padx=(GAP, 0))
         gui_a11y.name(self.rename_entry, _("Name template"))
         self.rename_status = ttk.Label(names, text=_(RENAME_HELP), font=self.font_small,
-                                       wraplength=600)
+                                       wraplength=px(600))
         self.rename_status.grid(row=1, column=0, columnspan=2, sticky="w")
 
         from .deduplicator import HEIC_SUPPORT
         heic = ttk.Checkbutton(frame, variable=self.heic_copies,
                                text=_("Also make a JPG copy of each HEIC photo (the HEIC is "
                                       "kept)"))
-        heic.grid(row=5, column=1, sticky="w", padx=GAP, pady=2)
+        heic.grid(row=5, column=1, sticky="w", padx=GAP, pady=px(2))
         if HEIC_SUPPORT is None:
             self.heic_copies.set(False)
             heic.state(["disabled"])
@@ -507,8 +585,8 @@ class GooglePhotosOrganizerGUI:
         self.place_check = ttk.Checkbutton(
             frame, variable=self.place_names,
             text=_("Add the town or city to folder names, for example 2023/06 Tokyo"))
-        self.place_check.grid(row=7, column=1, sticky="w", padx=GAP, pady=(2, 0))
-        self.place_note = ttk.Label(frame, font=self.font_small, wraplength=600)
+        self.place_check.grid(row=7, column=1, sticky="w", padx=GAP, pady=(px(2), 0))
+        self.place_note = ttk.Label(frame, font=self.font_small, wraplength=px(600))
         self.place_note.grid(row=8, column=1, sticky="w", padx=GAP)
         self._layout_trace = self.layout.trace_add(
             "write", lambda *args: self._match_place_names())
@@ -559,7 +637,7 @@ class GooglePhotosOrganizerGUI:
             self.validate()
 
     def _set_status(self, label: ttk.Label, level: str) -> None:
-        label.configure(foreground=STATUS_COLORS[self.theme][level])
+        label.configure(foreground=self._status_color(level))
         self._status_levels[label] = level
 
     def _show_check(self, label: ttk.Label, check: FieldCheck) -> None:
@@ -586,21 +664,21 @@ class GooglePhotosOrganizerGUI:
         frame = ttk.Frame(self.content)
         frame.columnconfigure(0, weight=1)
         frame.rowconfigure(3, weight=1)
-        self.preview_status = ttk.Label(frame, text="", wraplength=860, justify="left")
+        self.preview_status = ttk.Label(frame, text="", wraplength=px(860), justify="left")
         self.preview_status.grid(row=0, column=0, sticky="w", pady=(0, GAP))
         self.preview_bar = ttk.Progressbar(frame, mode="determinate", maximum=100)
-        self.preview_bar.grid(row=1, column=0, sticky="ew", pady=(0, 16))
+        self.preview_bar.grid(row=1, column=0, sticky="ew", pady=(0, px(16)))
 
         tiles = ttk.Frame(frame)
-        tiles.grid(row=2, column=0, sticky="ew", pady=(0, 16))
+        tiles.grid(row=2, column=0, sticky="ew", pady=(0, px(16)))
         self.tile_values: Dict[str, ttk.Label] = {}
         for column, name in enumerate(PREVIEW_TILES):
-            tile = ttk.Frame(tiles, padding=12, relief="solid", borderwidth=1)
+            tile = ttk.Frame(tiles, padding=px(12), relief="solid", borderwidth=1)
             tile.grid(row=0, column=column, sticky="nsew", padx=(0 if column == 0 else GAP, 0))
             tiles.columnconfigure(column, weight=1, uniform="tiles")
             value = ttk.Label(tile, text="-", font=self.font_value)
             value.grid(row=0, column=0, sticky="w")
-            ttk.Label(tile, text=_(name), font=self.font_small, wraplength=180).grid(
+            ttk.Label(tile, text=_(name), font=self.font_small, wraplength=px(180)).grid(
                 row=1, column=0, sticky="w")
             self.tile_values[name] = value
 
@@ -609,19 +687,19 @@ class GooglePhotosOrganizerGUI:
         table.columnconfigure(0, weight=1)
         table.rowconfigure(1, weight=1)
         ttk.Label(table, text=_("Photos by year"), font=self.font_label).grid(
-            row=0, column=0, sticky="w", pady=(0, 4))
+            row=0, column=0, sticky="w", pady=(0, px(4)))
         self.years = ttk.Treeview(table, columns=("files", "folder"), height=6)
         self.years.heading("#0", text=_("Year"))
         self.years.heading("files", text=_("Files"))
         self.years.heading("folder", text=_("Folder"))
-        self.years.column("#0", width=100, stretch=False)
-        self.years.column("files", width=100, anchor="e", stretch=False)
-        self.years.column("folder", width=300)
+        self.years.column("#0", width=px(100), stretch=False)
+        self.years.column("files", width=px(100), anchor="e", stretch=False)
+        self.years.column("folder", width=px(300))
         self.years.grid(row=1, column=0, sticky="nsew")
 
         self.report_button = ttk.Button(frame, text=_("Open full preview report"),
                                         command=self._open_preview_report)
-        self.report_button.grid(row=4, column=0, sticky="w", pady=(12, 0))
+        self.report_button.grid(row=4, column=0, sticky="w", pady=(px(12), 0))
         return frame
 
     def _options(self) -> Dict[str, Any]:
@@ -719,15 +797,15 @@ class GooglePhotosOrganizerGUI:
         frame.rowconfigure(7, weight=1)
 
         phases = ttk.Frame(frame)
-        phases.grid(row=0, column=0, sticky="ew", pady=(0, 16))
+        phases.grid(row=0, column=0, sticky="ew", pady=(0, px(16)))
         phases.columnconfigure(0, weight=1)
         self.phase_rows: List[ttk.Label] = []
         self.phase_states: List[ttk.Label] = []
         for row, (name, _names) in enumerate(RUN_PHASES):
             label = ttk.Label(phases, text=_(name))
-            label.grid(row=row, column=0, sticky="w", pady=2)
+            label.grid(row=row, column=0, sticky="w", pady=px(2))
             state = ttk.Label(phases, text=_("Waiting"), font=self.font_small)
-            state.grid(row=row, column=1, sticky="e", pady=2)
+            state.grid(row=row, column=1, sticky="e", pady=px(2))
             self.phase_rows.append(label)
             self.phase_states.append(state)
 
@@ -740,7 +818,7 @@ class GooglePhotosOrganizerGUI:
         self.run_file.grid(row=3, column=0, sticky="w")
         ttk.Label(frame, text=_("Your computer will not sleep while this runs. You can stop "
                                 "at any time and resume later."),
-                  font=self.font_small, wraplength=760).grid(row=4, column=0, sticky="w", pady=(16, 8))
+                  font=self.font_small, wraplength=px(760)).grid(row=4, column=0, sticky="w", pady=(px(16), px(8)))
 
         self.details_button = self._button(frame, N_("&Show details"), self._toggle_details)
         self.details_button.grid(row=5, column=0, sticky="w")
@@ -836,14 +914,14 @@ class GooglePhotosOrganizerGUI:
         frame.columnconfigure(0, weight=1)
         frame.rowconfigure(1, weight=1)
 
-        banner = ttk.Frame(frame, padding=(0, 0, 0, 12))
+        banner = ttk.Frame(frame, padding=(0, 0, 0, px(12)))
         banner.grid(row=0, column=0, sticky="ew")
         banner.columnconfigure(1, weight=1)
-        self.done_bar = tk.Frame(banner, width=4)
-        self.done_bar.grid(row=0, column=0, sticky="ns", padx=(0, 12))
-        self.done_banner = ttk.Label(banner, text="", wraplength=820, justify="left",
+        self.done_bar = tk.Frame(banner, width=px(4))
+        self.done_bar.grid(row=0, column=0, sticky="ns", padx=(0, px(12)))
+        self.done_banner = ttk.Label(banner, text="", wraplength=px(820), justify="left",
                                      font=self.font_label)
-        self.done_banner.grid(row=0, column=1, sticky="w", pady=4)
+        self.done_banner.grid(row=0, column=1, sticky="w", pady=px(4))
 
         self.done_summary = tk.Text(frame, height=16, wrap="none", borderwidth=0,
                                     font=self.font_mono, highlightthickness=0)
@@ -853,7 +931,7 @@ class GooglePhotosOrganizerGUI:
         self.done_summary.bind("<Shift-Tab>", self._focus_previous)
 
         buttons = ttk.Frame(frame)
-        buttons.grid(row=2, column=0, sticky="w", pady=(12, 0))
+        buttons.grid(row=2, column=0, sticky="w", pady=(px(12), 0))
         self.report_run_button = self._button(buttons, N_("Open &report"),
                                               self._open_run_report)
         self.report_run_button.grid(row=0, column=0, padx=(0, GAP))
@@ -942,7 +1020,7 @@ class GooglePhotosOrganizerGUI:
                 banner += " " + " ".join(look)
                 level = 'warning'
         self.done_banner.configure(text=banner)
-        self.done_bar.configure(background=BANNER_COLORS[self.theme][level])
+        self.done_bar.configure(background=self._banner_color(level))
         self._done_level = level
         gui_a11y.changed(self.done_banner)
         self.done_summary.configure(state="normal")
@@ -994,7 +1072,7 @@ class GooglePhotosOrganizerGUI:
             "Undone. {count} file was deleted from the destination.",
             "Undone. {count} files were deleted from the destination.", deleted).format(
             count=number(deleted)))
-        self.done_bar.configure(background=BANNER_COLORS[self.theme]['ok'])
+        self.done_bar.configure(background=self._banner_color('ok'))
         self.undo_button.state(["disabled"])
         gui_a11y.changed(self.done_banner)
 
@@ -1013,8 +1091,8 @@ class GooglePhotosOrganizerGUI:
         answer = {'yes': False}
         body = ttk.Frame(dialog, padding=PAD)
         body.grid(row=0, column=0, sticky="nsew")
-        ttk.Label(body, text=message, wraplength=420, justify="left").grid(
-            row=0, column=0, columnspan=2, sticky="w", pady=(0, 16))
+        ttk.Label(body, text=message, wraplength=px(420), justify="left").grid(
+            row=0, column=0, columnspan=2, sticky="w", pady=(0, px(16)))
 
         def close(result: bool) -> None:
             answer['yes'] = result

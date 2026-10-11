@@ -127,7 +127,8 @@ checked as you pick it, and they are remembered next time), preview the plan, or
 done. Organizing applies exactly the plan the preview showed. Stop asks first, and a stopped
 run can be resumed from the done step, which also opens the report and the log and can undo
 the run. Every button has an Alt shortcut (the underlined letter). It follows your system's
-light or dark mode, with a switch in the header.
+light or dark mode, with a switch in the header, and its display scaling (125 %, 150 %). With
+Windows High Contrast on, it keeps the system's colors.
 
 `--source` accepts either a folder of Takeout `.zip` files or an already-extracted export.
 
